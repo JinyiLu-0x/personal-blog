@@ -1,0 +1,264 @@
+---
+import { resume } from '@/data/resume'
+
+import { Button } from 'astro-pure/user'
+import PageLayout from '@/layouts/CommonPage.astro'
+import { profile } from '@/site-config'
+import { getUi, localizedPath, type SiteLocale } from '@/i18n/ui'
+import ToolSection from '@/components/about/ToolSection.astro'
+
+export const prerender = true
+
+interface Props { locale?: SiteLocale }
+const { locale = 'zh-CN' } = Astro.props
+const ui = getUi(locale)
+const isChinese = locale === 'zh-CN'
+
+const headings = [
+  { depth: 2, slug: 'professional-summary', text: ui.pages.professionalSummary },
+  { depth: 2, slug: 'education', text: ui.pages.education },
+  { depth: 2, slug: 'selected-projects', text: ui.pages.selectedProjects },
+  { depth: 2, slug: 'skills', text: ui.pages.skills },
+  { depth: 2, slug: 'tools', text: isChinese ? '常用工具' : 'Tools' },
+  { depth: 2, slug: 'about-this-site', text: ui.pages.aboutSite }
+]
+---
+
+<PageLayout
+  title={ui.pages.about}
+  subtitle={ui.pages.aboutSubtitle}
+  {headings}
+  {locale}
+  comment
+>
+  <h2 id='professional-summary'>{ui.pages.professionalSummary}</h2>
+  {(isChinese ? resume.summaryZh : resume.summary).map((paragraph) => <p>{paragraph}</p>)}
+  <p><strong>{isChinese ? `${resume.workAuthorizationZh}。` : `${resume.workAuthorization}.`}</strong></p>
+
+  <div class='not-prose flex flex-wrap gap-3'>
+    <Button title={ui.pages.projects} href={localizedPath('/projects', locale)} variant='ahead' />
+    <Button title='GitHub' href={profile.github} target='_blank' />
+    <Button title={ui.pages.contact} href={localizedPath('/contact', locale)} />
+  </div>
+
+  <h2 id='education'>{ui.pages.education}</h2>
+  <div class='not-prose grid gap-4'>
+    {
+      resume.education.map((item) => (
+        <article class='rounded-xl border bg-background p-5 transition-colors hover:bg-muted'>
+          <div class='flex flex-col justify-between gap-1 sm:flex-row sm:gap-5'>
+            <div>
+              <h3 class='font-medium'>{isChinese ? item.institutionZh : item.institution}</h3>
+              <p class='mt-1 text-sm text-muted-foreground'>{isChinese ? item.degreeZh : item.degree}</p>
+            </div>
+            <p class='shrink-0 text-sm text-muted-foreground'>{isChinese ? item.periodZh : item.period}</p>
+          </div>
+          <p class='mt-2 text-sm text-muted-foreground'>{isChinese ? item.locationZh : item.location}</p>
+          <ul class='mt-3 flex flex-wrap gap-2'>
+            {[...item.details, ...(isChinese ? item.awardsZh : item.awards)].map((detail) => (
+              <li class='rounded-full border bg-muted px-2.5 py-1 text-xs'>{detail}</li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
+  </div>
+
+  <h2 id='selected-projects'>{ui.pages.selectedProjects}</h2>
+  <ul>
+    <li><a href={localizedPath('/projects/ecoskin-salesforce-ai', locale)}>EcoSkin Salesforce AI Agent</a></li>
+    <li><a href={localizedPath('/projects/linkverse', locale)}>LinkVerse Knowledge Workspace</a></li>
+    <li><a href={localizedPath('/projects/raspberry-pi-private-cloud', locale)}>{isChinese ? 'Raspberry Pi 私有云' : 'Raspberry Pi Private Cloud'}</a></li>
+  </ul>
+
+  <h2 id='skills'>{ui.pages.skills}</h2>
+  <div class='not-prose grid gap-4'>
+    {
+      resume.skills.map((group, index) => (
+        <section class='grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)]'>
+          <h3 class='font-medium'>{Object.values(ui.skills)[index] ?? group.title}</h3>
+          <ul class='flex flex-wrap gap-1.5'>
+            {group.items.map((item) => (
+              <li class='rounded-lg border bg-muted px-2 py-0.5 text-sm leading-5 text-muted-foreground'>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <h2 id='tools'>{isChinese ? '常用工具' : 'Tools'}</h2>
+  <p>
+    {
+      isChinese
+        ? '这些工具共同支持我的知识整理、软件开发与 AI 辅助学习流程。工具会随任务变化，不代表每项工具都以相同频率使用。'
+        : 'These tools support my knowledge organisation, software development, and AI-assisted learning workflow. The toolkit changes with the task, so not every tool is used equally often.'
+    }
+  </p>
+
+  <aside class='not-prose mb-4 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card/70 to-background p-5'>
+    <p class='font-mono text-xs uppercase tracking-[0.16em] text-primary'>
+      {isChinese ? '合规的 AI 工作流' : 'Responsible AI workflow'}
+    </p>
+    <h3 class='mt-2 text-lg font-medium'>
+      {isChinese ? '让资料整理与复习更高效' : 'Making study and review more efficient'}
+    </h3>
+    <p class='mt-2 text-sm leading-6 text-muted-foreground'>
+      {
+        isChinese
+          ? '在课程规则与资料使用权限允许的前提下，我使用 AI 辅助读取本地资料、提取关键概念、对照笔记并组织复习结构，也用于加快原型、调试和文档整理。AI 用于支持理解与迭代，来源核对和最终判断仍由我完成。'
+          : 'Where course rules and data permissions allow, I use AI to help review local materials, extract key concepts, compare notes, and organise revision structures, as well as accelerate prototyping, debugging, and documentation. AI supports understanding and iteration; source checking and final decisions remain my responsibility.'
+      }
+    </p>
+  </aside>
+
+  <ToolSection
+    class='mb-4'
+    title={isChinese ? '知识工作流' : 'Knowledge Workflow'}
+    tools={[
+      {
+        name: 'Codex',
+        description: isChinese ? '本地资料与开发协作' : 'Local materials and development collaboration',
+        href: 'https://openai.com/codex/',
+        icon: import('@/assets/tools/chatgpt.svg?raw')
+      },
+      {
+        name: 'Arc',
+        description: isChinese ? '研究与网页工作区' : 'Research and web workspace',
+        href: 'https://arc.net/',
+        icon: import('@/assets/tools/arc.svg?raw')
+      },
+      {
+        name: 'Chrome',
+        description: isChinese ? '开发与日常浏览' : 'Development and everyday browsing',
+        href: 'https://www.google.com/chrome/',
+        icon: import('@/assets/tools/chrome.svg?raw')
+      },
+      {
+        name: 'Obsidian',
+        description: isChinese ? '本地笔记与知识整理' : 'Local notes and knowledge organisation',
+        href: 'https://obsidian.md/',
+        icon: import('@/assets/tools/obsidian.svg?raw')
+      }
+    ]}
+  />
+  <ToolSection
+    class='mb-4'
+    title={isChinese ? '开发与 AI' : 'Development & AI'}
+    tools={[
+      {
+        name: 'VS Code',
+        description: isChinese ? '主要代码编辑器' : 'Primary code editor',
+        href: 'https://code.visualstudio.com/',
+        icon: import('@/assets/tools/vscode.svg?raw')
+      },
+      {
+        name: 'GitHub Copilot',
+        description: isChinese ? '编辑器内代码辅助' : 'In-editor coding assistance',
+        href: 'https://github.com/features/copilot',
+        icon: import('@/assets/tools/github-copilot.svg?raw')
+      },
+      {
+        name: 'Cursor',
+        description: isChinese ? 'AI 辅助代码编辑' : 'AI-assisted code editing',
+        href: 'https://www.cursor.com/',
+        icon: import('@/assets/tools/cursor.svg?raw')
+      },
+      {
+        name: 'Claude Code',
+        description: isChinese ? '终端开发与代码理解' : 'Terminal development and code understanding',
+        href: 'https://www.anthropic.com/claude-code',
+        icon: import('@/assets/tools/claude.svg?raw')
+      },
+      {
+        name: 'Antigravity',
+        description: isChinese ? 'AI 开发与实验' : 'AI development and experimentation',
+        href: 'https://antigravity.google/',
+        icon: import('@/assets/tools/antigravity.svg?raw')
+      },
+      {
+        name: 'Google AI Studio',
+        description: isChinese ? '模型实验与原型验证' : 'Model experiments and prototyping',
+        href: 'https://aistudio.google.com/',
+        icon: import('@/assets/tools/gemini.svg?raw')
+      },
+      {
+        name: 'Figma',
+        description: isChinese ? '界面设计与原型' : 'Interface design and prototyping',
+        href: 'https://www.figma.com/',
+        icon: import('@/assets/tools/figma.svg?raw')
+      },
+      {
+        name: 'Replit',
+        description: isChinese ? '快速开发与原型' : 'Rapid development and prototyping',
+        href: 'https://replit.com/',
+        icon: import('@/assets/tools/replit.svg?raw')
+      }
+    ]}
+  />
+  <ToolSection
+    class='mb-4'
+    title={isChinese ? '其他 AI 与创作平台' : 'Additional AI & Creation Platforms'}
+    tools={[
+      {
+        name: 'ChatGPT',
+        description: isChinese ? '研究、写作与开发辅助' : 'Research, writing, and development support',
+        href: 'https://chatgpt.com/',
+        icon: import('@/assets/tools/chatgpt.svg?raw')
+      },
+      {
+        name: 'Claude',
+        description: isChinese ? '分析、写作与代码讨论' : 'Analysis, writing, and code discussion',
+        href: 'https://claude.ai/',
+        icon: import('@/assets/tools/claude.svg?raw')
+      },
+      {
+        name: 'Gemini',
+        description: isChinese ? '研究与多模态实验' : 'Research and multimodal experiments',
+        href: 'https://gemini.google.com/',
+        icon: import('@/assets/tools/gemini.svg?raw')
+      },
+      {
+        name: 'Remotion',
+        description: isChinese ? '代码驱动的视频创作' : 'Code-driven video creation',
+        href: 'https://www.remotion.dev/',
+        icon: import('@/assets/tools/remotion.svg?raw')
+      }
+    ]}
+  />
+  <ToolSection
+    title={isChinese ? '运行环境' : 'Environment'}
+    tools={[
+      {
+        name: 'macOS',
+        description: isChinese ? '主要桌面环境' : 'Primary desktop environment',
+        href: 'https://www.apple.com/macos/',
+        icon: import('@/assets/tools/apple.svg?raw')
+      },
+      {
+        name: 'Windows',
+        description: isChinese ? '开发与日常桌面环境' : 'Development and everyday desktop environment',
+        href: 'https://www.microsoft.com/windows/',
+        icon: import('@/assets/tools/windows11.svg?raw')
+      }
+    ]}
+  />
+
+  <h2 id='about-this-site'>{ui.pages.aboutSite}</h2>
+  {
+    isChinese ? (
+      <p>
+        本站使用 Astro 构建，并基于
+        <a href='https://github.com/cworld1/astro-theme-pure' target='_blank'>Astro Theme Pure</a>
+        进行定制。保留了主题的搜索、RSS、SEO、目录、Markdown/MDX 和响应式布局，同时加入灰蓝视觉，以及项目与笔记内容结构。
+      </p>
+    ) : (
+      <p>
+        This site is built with Astro and customized from
+        <a href='https://github.com/cworld1/astro-theme-pure' target='_blank'>Astro Theme Pure</a>. It keeps the theme's Search, RSS, SEO, TOC, Markdown/MDX, and responsive layout while adding a grey-blue visual system and dedicated Projects and Notes content.
+      </p>
+    )
+  }
+</PageLayout>

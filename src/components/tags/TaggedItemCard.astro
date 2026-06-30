@@ -1,0 +1,35 @@
+---
+import type { TaggedContentItem } from '@/utils/content'
+import type { SiteLocale } from '@/i18n/ui'
+import LocalizedDate from '@/components/common/LocalizedDate.astro'
+
+interface Props {
+  item: TaggedContentItem
+  locale?: SiteLocale
+}
+
+const { item, locale = 'zh-CN' } = Astro.props
+
+const typeLabels = locale === 'zh-CN' ? {
+  blog: '博客',
+  project: '项目',
+  note: '笔记'
+} : {
+  blog: 'Blog',
+  project: 'Project',
+  note: 'Note'
+}
+---
+
+<article
+  class='rounded-2xl border bg-background px-5 py-3 transition-all hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-muted hover:shadow-sm motion-reduce:transform-none'
+>
+  <div class='mb-2 flex items-center gap-2 text-xs text-muted-foreground'>
+    <span class='rounded-full border bg-muted px-2 py-1'>{typeLabels[item.type]}</span>
+    <LocalizedDate date={item.date} {locale} />
+  </div>
+  <h2 class='text-lg font-medium'>
+    <a href={item.href} class='hover:text-primary' data-astro-prefetch>{item.title}</a>
+  </h2>
+  <p class='mt-2 line-clamp-2 text-sm text-muted-foreground'>{item.description}</p>
+</article>

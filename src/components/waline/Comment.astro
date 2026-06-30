@@ -1,0 +1,483 @@
+---
+import config from '@/site-config'
+
+import '@waline/client/style'
+
+import { cn } from 'astro-pure/utils'
+
+const { class: className } = Astro.props
+---
+
+{
+  config.integ.waline.enable && (
+    <comment-component>
+      <div id='waline' class={cn('not-prose', className)}>
+        Comment seems to stuck. Try to refresh?✨
+      </div>
+    </comment-component>
+  )
+}
+
+<script>
+  import { init as walineInit } from '@waline/client'
+  import type { WalineEmojiPresets } from '@waline/client'
+  import config from 'virtual:config'
+  import { getWalinePath } from '@/utils/waline'
+
+  const walineConfig = config.integ.waline
+
+  class Comment extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      // Prevent Vue log errors
+      ;(globalThis as unknown as { __VUE_OPTIONS_API__: boolean }).__VUE_OPTIONS_API__ = true
+      ;(globalThis as unknown as { __VUE_PROD_DEVTOOLS__: boolean }).__VUE_PROD_DEVTOOLS__ = false
+      ;(
+        globalThis as unknown as { __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean }
+      ).__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false
+
+      const emoji = walineConfig.emoji?.map(
+        (preset) => `${config.npmCDN}/@waline/emojis@1.2.0/${preset}` as WalineEmojiPresets
+      )
+      const isChinese = document.documentElement.lang.toLowerCase().startsWith('zh')
+      const lang = isChinese ? 'zh-CN' : 'en-US'
+      const locale = isChinese
+        ? {
+            reaction0: '喜欢',
+            nick: '昵称',
+            nickError: '昵称至少需要 3 个字符',
+            mail: '邮箱',
+            mailError: '请输入有效的邮箱地址',
+            link: '个人网站',
+            optional: '选填',
+            placeholder: '友善交流，认真表达。填写邮箱可接收回复通知，无需登录。',
+            sofa: '还没有评论，来留下第一条吧。',
+            submit: '提交评论',
+            comment: '评论',
+            preview: '预览',
+            login: '登录',
+            logout: '退出登录',
+            latest: '最新',
+            oldest: '最早',
+            hottest: '热门',
+            reactionTitle: '你觉得这篇内容怎么样？'
+          }
+        : {
+            reaction0: 'Like',
+            nick: 'Nickname',
+            mail: 'Email',
+            link: 'Website',
+            optional: 'Optional',
+            placeholder: 'Join the discussion. Add your email to receive replies; no login required.',
+            submit: 'Submit comment'
+          }
+
+      this.addEventListener(
+        'click',
+        (event) => {
+          if (!(event.target instanceof Element)) return
+
+          const reaction = event.target.closest('.wl-reaction-item')
+          if (!reaction) return
+          if (reaction.matches('.is-optimistic-like, .is-optimistic-unlike')) return
+
+          const wasActive = reaction.classList.contains('active')
+          const votes = reaction.querySelector<HTMLElement>('.wl-reaction-votes')
+          const originalVotes = votes?.textContent ?? ''
+          const currentVotes = Number.parseInt(originalVotes, 10)
+
+          if (votes && Number.isFinite(currentVotes)) {
+            votes.textContent = String(Math.max(0, currentVotes + (wasActive ? -1 : 1)))
+          }
+
+          reaction.setAttribute('aria-busy', 'true')
+          reaction.classList.toggle('is-optimistic-like', !wasActive)
+          reaction.classList.toggle('is-optimistic-unlike', wasActive)
+
+          const clearOptimisticState = (restoreVotes = false) => {
+            if (restoreVotes && votes) votes.textContent = originalVotes
+            reaction.removeAttribute('aria-busy')
+            reaction.classList.remove('is-optimistic-like', 'is-optimistic-unlike')
+            observer.disconnect()
+            window.clearTimeout(fallbackTimer)
+          }
+          const observer = new MutationObserver(() => {
+            if (reaction.classList.contains('active') !== wasActive) clearOptimisticState(false)
+          })
+          const fallbackTimer = window.setTimeout(() => clearOptimisticState(true), 8000)
+
+          observer.observe(reaction, { attributes: true, attributeFilter: ['class'] })
+        },
+        true
+      )
+
+      walineInit({
+        el: 'comment-component #waline',
+        serverURL: walineConfig.server || '',
+        emoji,
+        reaction: ['/icons/heart-item.svg'],
+        ...walineConfig.additionalConfigs,
+        path: getWalinePath(window.location.pathname),
+        lang,
+        locale
+      })
+    }
+  }
+
+  if (walineConfig.enable) customElements.define('comment-component', Comment)
+</script>
+
+{
+  config.integ.waline.showMeta &&(
+    <style> #waline :global(.wl-meta) { display: none; } </style>
+  )
+}
+
+<style>
+  /* Basic theme */
+  #waline {
+    /* Font size */
+    --waline-font-size: 16px;
+    /* Basic color */
+    --waline-white: hsl(var(--background) / var(--un-bg-opacity, 1));
+    --waline-light-grey: #999;
+    --waline-dark-grey: #666;
+    /* Theme color */
+    --waline-theme-color: hsl(var(--foreground) / var(--un-text-opacity, 1));
+    --waline-active-color: hsl(var(--primary) / var(--un-text-opacity, 1));
+    --waline-like-color: #df9da3;
+    /* Layout */
+    --waline-color: hsl(var(--muted-foreground) / var(--un-text-opacity, 1));
+    --waline-bg-color: hsl(var(--muted) / var(--un-bg-opacity, 1));
+    --waline-bg-color-light: hsl(var(--input) / var(--un-text-opacity, 1));
+    --waline-bg-color-hover: #f0f0f0;
+    --waline-border-color: hsl(var(--border) / var(--un-border-opacity, 1));
+    --waline-disable-bg-color: #f8f8f8;
+    --waline-disable-color: #bbb;
+    --waline-code-bg-color: #282c34;
+    /* Special */
+    --waline-bq-color: #f0f0f0;
+    /* Avatar */
+    --waline-avatar-size: 3.25rem;
+    --waline-m-avatar-size: calc(var(--waline-avatar-size) * 9 / 13);
+    /* Badge */
+    --waline-badge-color: hsl(var(--border) / var(--un-border-opacity, 1));
+    --waline-badge-font-size: 0.775em;
+    /* Info */
+    --waline-info-bg-color: var(--waline-bg-color-light);
+    --waline-info-color: var(--waline-color);
+    --waline-info-font-size: 0.625em;
+    /* Render selection */
+    --waline-border: 1px solid var(--waline-border-color);
+    --waline-avatar-radius: 50%;
+    --waline-box-shadow: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #waline :global([data-waline]),
+  #waline :global(.wl-comment),
+  #waline :global(.wl-panel) {
+    width: 100%;
+    min-width: 0;
+  }
+  #waline :global(.wl-comment) {
+    align-items: flex-start;
+  }
+  #waline :global(.wl-panel) {
+    box-sizing: border-box;
+    margin: 0;
+    overflow: hidden;
+  }
+  #waline :global(.wl-header) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0;
+  }
+  #waline :global(.wl-header-item) {
+    box-sizing: border-box;
+    width: auto !important;
+    min-width: 0;
+    align-items: center;
+  }
+  #waline :global(.wl-header-item:not(:last-child)) {
+    border-inline-end: 1px solid hsl(var(--border) / var(--un-border-opacity, 1));
+  }
+  #waline :global(.wl-header label) {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 0.65rem 0.7rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  #waline :global(.wl-header input) {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    padding: 0.65rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  #waline :global(.wl-editor) {
+    display: block;
+    box-sizing: border-box;
+    width: calc(100% - 1rem);
+    overflow-x: hidden;
+  }
+  #waline :global(.wl-footer) {
+    align-items: center;
+    gap: 0.5rem;
+  }
+  #waline :global(.wl-actions),
+  #waline :global(.wl-info) {
+    min-width: 0;
+  }
+  #waline :global(.wl-meta-head),
+  #waline :global(.wl-meta-foot) {
+    gap: 0.75rem;
+  }
+  #waline :global(.wl-meta-foot) {
+    align-items: center;
+  }
+  #waline :global(.wl-rss) {
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.55rem;
+    overflow: hidden;
+    max-width: 1rem;
+    white-space: nowrap;
+    transition: max-width 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #waline :global(.wl-rss:hover),
+  #waline :global(.wl-rss:focus-within) {
+    max-width: 26rem;
+  }
+  #waline :global(.wl-rss > a) {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0;
+    color: var(--waline-light-grey);
+    line-height: 1.25;
+    transition:
+      color 160ms ease,
+      opacity 180ms ease;
+  }
+  #waline :global(.wl-rss > a + a) {
+    opacity: 0;
+  }
+  #waline :global(.wl-rss:hover > a + a),
+  #waline :global(.wl-rss:focus-within > a + a) {
+    opacity: 1;
+  }
+  #waline :global(.wl-rss > a:hover),
+  #waline :global(.wl-rss > a:focus-visible) {
+    color: var(--waline-theme-color);
+  }
+  #waline :global(.wl-rss > a:focus-visible) {
+    outline: 1px solid currentColor;
+    outline-offset: 3px;
+  }
+  #waline :global(.wl-rss svg) {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 auto;
+  }
+  #waline :global(.wl-rss span) {
+    color: inherit;
+    font-size: var(--waline-info-font-size);
+    line-height: 1.25;
+    text-align: start;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-0.2rem);
+    transition:
+      opacity 160ms ease,
+      transform 200ms ease;
+  }
+  #waline :global(.wl-rss:hover span),
+  #waline :global(.wl-rss:focus-within span) {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  #waline :global(.wl-power) {
+    flex: 0 0 auto;
+    align-self: center;
+  }
+
+  @media (max-width: 640px) {
+    #waline :global(.wl-header) {
+      grid-template-columns: 1fr;
+    }
+    #waline :global(.wl-header-item:not(:last-child)) {
+      border-inline-end: 0;
+      border-bottom: 1px solid hsl(var(--border) / var(--un-border-opacity, 1));
+    }
+    #waline :global(.wl-header label) {
+      width: 5rem;
+      text-align: start;
+    }
+    #waline :global(.wl-footer),
+    #waline :global(.wl-meta-head) {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    #waline :global(.wl-actions),
+    #waline :global(.wl-info) {
+      width: 100%;
+      justify-content: space-between;
+    }
+    #waline :global(.wl-sort) {
+      margin-inline-start: 0;
+    }
+    #waline :global(.wl-meta-foot) {
+      align-items: center;
+      flex-direction: row;
+      gap: 0.5rem;
+    }
+    #waline :global(.wl-rss:hover),
+    #waline :global(.wl-rss:focus-within) {
+      max-width: calc(100% - 7rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #waline :global(.wl-rss > a) {
+      transition: none;
+    }
+    #waline :global(.wl-rss),
+    #waline :global(.wl-rss span) {
+      transition: none;
+    }
+  }
+
+  /* Fix long text and links overflow */
+  #waline :global(.wl-content, .wl-text, .wl-comment-text, .wl-item, .wl-card-item, a) {
+    max-width: 100%;
+  }
+  #waline :global(.wl-meta, .wl-content, .wl-text, .wl-comment-text) {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  #waline :global(a) {
+    display: inline-block;
+  }
+
+  /* Reaction buttons */
+  #waline :global(.wl-reaction-title, .wl-reaction-text) {
+    display: none;
+  }
+  #waline :global(.wl-reaction) {
+    overflow: visible;
+    margin-bottom: 0.5em;
+  }
+  #waline :global(.wl-reaction-img) {
+    width: auto;
+    display: flex;
+    height: 35px;
+    align-items: center;
+    column-gap: 0.4rem;
+  }
+  #waline :global(.wl-reaction-votes) {
+    position: inherit;
+    top: inherit;
+    min-width: inherit;
+    inset-inline-end: inherit;
+    display: flex;
+    font-weight: normal;
+    border: none;
+    background: none;
+    color: inherit;
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+  }
+  #waline :global(.wl-reaction-loading) {
+    position: inherit;
+    top: inherit;
+    min-width: inherit;
+  }
+  #waline :global(.wl-reaction-votes:after) {
+    content: none;
+  }
+  #waline :global(.wl-reaction img) {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    filter: invert(25%);
+    transition:
+      opacity 140ms ease,
+      transform 180ms ease;
+  }
+  #waline
+    :global(
+      .wl-reaction-item:is(.active, .is-optimistic-like):not(.is-optimistic-unlike)
+        .wl-reaction-img::after
+    ) {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    width: 32px;
+    height: 32px;
+    z-index: 2;
+    content: '';
+    background: url('/icons/heart-solid.svg') center / contain no-repeat;
+    animation: waline-like-fill 220ms cubic-bezier(0.2, 0.85, 0.3, 1.15) both;
+  }
+  #waline
+    :global(
+      .wl-reaction-item:is(.active, .is-optimistic-like):not(.is-optimistic-unlike) img
+    ) {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  #waline
+    :global(
+      .wl-reaction-item:is(.active, .is-optimistic-like):not(.is-optimistic-unlike)
+        .wl-reaction-votes
+    ) {
+    background: transparent;
+    color: var(--waline-like-color);
+  }
+  :global(.dark) #waline :global(.wl-reaction img) {
+    filter: invert(75%);
+  }
+  :global(.dark) #waline {
+    --waline-like-color: #e5a8ad;
+  }
+
+  @keyframes waline-like-fill {
+    0% {
+      opacity: 0;
+      transform: translateY(-50%) scale(0.9);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(-50%) scale(1.04);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #waline
+      :global(
+        .wl-reaction-item:is(.active, .is-optimistic-like):not(.is-optimistic-unlike)
+          .wl-reaction-img::after
+      ) {
+      animation: none;
+      transform: translateY(-50%);
+    }
+  }
+</style>

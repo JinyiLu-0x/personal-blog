@@ -1,0 +1,15 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import BlogDetail from '../../blog/[...id].astro'
+import { getCanonicalId, getPublishedBlogPosts } from '@/utils/content'
+
+export const prerender = true
+export async function getStaticPaths() {
+  const posts = await getPublishedBlogPosts('en-US')
+  return posts.map((post) => ({ params: { id: getCanonicalId(post) }, props: { post, posts } }))
+}
+interface Props { post: CollectionEntry<'blog'>; posts: CollectionEntry<'blog'>[] }
+const { post, posts } = Astro.props
+---
+
+<BlogDetail {post} {posts} />

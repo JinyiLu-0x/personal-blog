@@ -1,0 +1,16 @@
+---
+import { cn } from 'astro-pure/utils'
+import type { SiteLocale } from '@/i18n/ui'
+
+interface Props {
+  date: Date
+  locale?: SiteLocale
+  class?: string
+  options?: Intl.DateTimeFormatOptions
+}
+const { date, locale = 'zh-CN', class: className, options } = Astro.props
+const formatted = new Intl.DateTimeFormat(locale, options ?? {
+  year: 'numeric', month: 'short', day: 'numeric'
+}).format(date)
+---
+<time datetime={date.toISOString()} class={cn('text-muted-foreground font-mono', className)}>{formatted}</time>

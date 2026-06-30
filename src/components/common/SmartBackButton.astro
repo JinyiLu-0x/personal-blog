@@ -1,0 +1,42 @@
+---
+import { Button } from 'astro-pure/user'
+import type { SiteLocale } from '@/i18n/ui'
+
+interface Props {
+  fallback?: string
+  locale?: SiteLocale
+  label?: string
+}
+const { fallback = '/', locale = 'zh-CN', label = locale === 'zh-CN' ? '返回' : 'Back' } = Astro.props
+---
+
+<Button title={label} href={fallback} variant='back' data-smart-back />
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('[data-smart-back]').forEach((link) => {
+    if (link.dataset.backReady) return
+    link.dataset.backReady = 'true'
+
+    const currentPath = `${window.location.pathname}${window.location.search}`
+    const previousPath = sessionStorage.getItem('site-navigation-previous') ?? ''
+    const hasPreviousPage =
+      previousPath?.startsWith('/') && previousPath !== currentPath
+
+    if (hasPreviousPage) link.href = previousPath
+
+    link.addEventListener('click', (event) => {
+      if (!hasPreviousPage) return
+
+      event.preventDefault()
+
+      // A TOC heading may add one or more hash-only history entries. In that
+      // case, navigate to the recorded page directly instead of stepping
+      // backwards through headings on the current article.
+      if (window.location.hash) {
+        window.location.assign(previousPath)
+      } else {
+        window.history.back()
+      }
+    })
+  })
+</script>

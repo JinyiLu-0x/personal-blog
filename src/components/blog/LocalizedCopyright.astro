@@ -1,0 +1,21 @@
+---
+import type { InferEntrySchema } from 'astro:content'
+import { Icon } from 'astro-pure/user'
+import LocalizedDate from '@/components/common/LocalizedDate.astro'
+import type { SiteLocale } from '@/i18n/ui'
+
+interface Props { data: InferEntrySchema<'blog'>; locale: SiteLocale }
+const { data, locale } = Astro.props
+const isChinese = locale === 'zh-CN'
+---
+
+<div class='relative flex flex-col gap-y-2 rounded-xl border px-3 py-2 sm:px-4 sm:py-3'>
+  <Icon class='absolute end-4 top-4 size-20 opacity-10' name='copyright' />
+  <div class='font-medium text-foreground'>{data.title}</div>
+  <div class='line-clamp-1 text-sm'>{Astro.url}</div>
+  <div class='flex flex-row flex-wrap gap-x-8 gap-y-1'>
+    <div class='flex gap-x-2 sm:flex-col'><span>{isChinese ? '作者' : 'Author'}</span><span class='text-sm text-foreground'>Moz</span></div>
+    <div class='flex gap-x-2 sm:flex-col'><span>{isChinese ? '发布于' : 'Published'}</span><LocalizedDate date={data.publishDate} {locale} class='text-sm text-foreground' /></div>
+    <div class='flex gap-x-2 sm:flex-col'><span>{isChinese ? '许可协议' : 'License'}</span><a class='text-sm text-foreground' href='https://creativecommons.org/licenses/by-nc-sa/4.0/' target='_blank'>CC BY-NC-SA 4.0</a></div>
+  </div>
+</div>

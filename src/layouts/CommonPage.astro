@@ -1,0 +1,39 @@
+---
+import type { MarkdownHeading } from 'astro'
+
+import { TOC } from 'astro-pure/components/pages'
+import PageLayout from '@/layouts/ContentLayout.astro'
+import PageHeader from '@/components/common/PageHeader.astro'
+import type { SiteLocale } from '@/i18n/ui'
+import CommentsSection from '@/components/blog/CommentsSection.astro'
+import { PageInfo } from '@/components/waline'
+
+interface Props {
+  title: string
+  subtitle?: string
+  headings?: MarkdownHeading[]
+  view?: boolean
+  comment?: boolean
+  locale?: SiteLocale
+}
+
+const { title, subtitle, headings, view: _view, comment: enableComment, locale = 'zh-CN', ...props } = Astro.props
+---
+
+<PageLayout meta={{ title }} hasSidebar={Boolean(headings?.length)} {locale} {...props}>
+  {!!headings?.length && <TOC headings={headings} slot='sidebar' />}
+
+  <Fragment slot='header'>
+    <PageHeader {title} {subtitle} />
+    {enableComment && <PageInfo comment class='mt-2 italic' />}
+  </Fragment>
+
+  <slot />
+
+  <Fragment slot='bottom'>
+    <slot name='bottom' />
+    {enableComment && <CommentsSection {locale} />}
+  </Fragment>
+
+  <slot name='bottom-sidebar' slot='bottom-sidebar' />
+</PageLayout>

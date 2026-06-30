@@ -1,0 +1,15 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import NoteDetail from '../../notes/[...id].astro'
+import { getCanonicalId, getPublicNotes } from '@/utils/content'
+
+export const prerender = true
+export async function getStaticPaths() {
+  const notes = await getPublicNotes('en-US')
+  return notes.map((note) => ({ params: { id: getCanonicalId(note) }, props: { note } }))
+}
+interface Props { note: CollectionEntry<'notes'> }
+const { note } = Astro.props
+---
+
+<NoteDetail {note} />

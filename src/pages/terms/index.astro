@@ -1,0 +1,31 @@
+---
+import { Button, CardList } from 'astro-pure/user'
+import { cn } from 'astro-pure/utils'
+import PageLayout from '@/layouts/BaseLayout.astro'
+import PageHeader from '@/components/common/PageHeader.astro'
+import { integ, terms } from '@/site-config'
+
+const meta = {
+  title: 'Site policy',
+  description: 'Site policy documentation'
+}
+---
+
+<PageLayout {meta}>
+  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
+    <Button title='Back' href='/' variant='back' />
+    <PageHeader
+      title='Site Policy'
+      subtitle='Policy and copyright information for this personal website.'
+      class='animate mb-8 mt-6 sm:mt-10'
+      id='content-header'
+    />
+
+    <div id='content' class={cn('animate mt-8 max-w-none md:min-w-[45ch]', integ.typography.class)}>
+      <h2 class='text-xl font-medium'>Site policy documentation</h2>
+      <CardList {...terms} />
+      <h2 class='text-xl font-medium'>Help Information</h2>
+      <p>You need to add md files in this directory.</p>
+    </div>
+  </main>
+</PageLayout>

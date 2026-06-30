@@ -1,0 +1,97 @@
+---
+import { Icon } from 'astro-pure/user'
+import type { NoteEntry } from '@/utils/content'
+import { getCanonicalId } from '@/utils/content'
+import { formatTag, localizedPath, type SiteLocale } from '@/i18n/ui'
+import LocalizedDate from '@/components/common/LocalizedDate.astro'
+
+interface Props {
+  note: NoteEntry
+  compact?: boolean
+  locale?: SiteLocale
+}
+
+const { note, compact = false, locale = 'zh-CN' } = Astro.props
+const { data } = note
+
+const typeLabelsZh = {
+  thought: '想法',
+  'external-link': '外部链接',
+  clipping: '摘录',
+  learning: '学习笔记',
+  project: '项目笔记'
+} as const
+const typeLabelsEn = { thought: 'Thought', 'external-link': 'External link', clipping: 'Clipping', learning: 'Learning note', project: 'Project note' } as const
+const typeLabels = locale === 'zh-CN' ? typeLabelsZh : typeLabelsEn
+const href = localizedPath(`/notes/${getCanonicalId(note)}`, locale)
+---
+
+<article
+  class='rounded-2xl border bg-background px-5 py-3 transition-all hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-muted hover:shadow-sm motion-reduce:transform-none'
+>
+  <div class='mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
+    <span class='rounded-full border bg-muted px-2 py-1'>{typeLabels[data.type]}</span>
+    {
+      data.bucket === 'saved' && (
+        <span class='flex items-center gap-1'>
+          <Icon name='link' class='size-4' />
+          {locale === 'zh-CN' ? '已收藏' : 'Saved'}
+        </span>
+      )
+    }
+    {
+      data.bucket === 'learn-later' && (
+        <span class='flex items-center gap-1'>
+          <Icon name='bulb' class='size-4' />
+          {locale === 'zh-CN' ? '稍后学习' : 'Learn Later'}
+        </span>
+      )
+    }
+    <LocalizedDate date={data.updatedDate ?? data.publishDate} {locale} />
+  </div>
+
+  <h2 class:list={['font-medium', compact ? 'text-base' : 'text-xl']}>
+    <a href={href} class='hover:text-primary' data-astro-prefetch>{data.title}</a>
+  </h2>
+  <p class:list={['mt-2 text-muted-foreground', compact && 'line-clamp-2 text-sm']}>
+    {data.summary}
+  </p>
+
+  {
+    !compact && data.comment && (
+      <p class='mt-3 border-s-2 border-primary/35 ps-3 text-sm text-foreground/85'>
+        {data.comment}
+      </p>
+    )
+  }
+
+  <div class='mt-4 flex flex-wrap items-center justify-between gap-3'>
+    <ul class='flex flex-wrap gap-2' aria-label='Note tags'>
+      {
+        data.tags.filter(Boolean).map((tag) => (
+          <li>
+            <a
+              href={`/tags/${encodeURIComponent(tag)}`}
+              class='block rounded-full border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-border hover:text-primary'
+            >
+              #{formatTag(tag, locale)}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      data.externalUrl && (
+        <a
+          href={data.externalUrl}
+          target='_blank'
+          rel='noreferrer'
+          class='flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary'
+        >
+          {data.source ?? (locale === 'zh-CN' ? '打开来源' : 'Open source')} <span aria-hidden='true'>↗</span>
+        </a>
+      )
+    }
+  </div>
+</article>

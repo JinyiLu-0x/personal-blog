@@ -1,0 +1,21 @@
+---
+import config from '@/site-config'
+import type { SiteLocale } from '@/i18n/ui'
+import { Comment } from '@/components/waline'
+import CommentPlaceholder from '@/components/blog/CommentPlaceholder.astro'
+
+interface Props {
+  locale?: SiteLocale
+  class?: string
+}
+
+const { locale = 'zh-CN', class: className = 'mt-3 sm:mt-6' } = Astro.props
+---
+
+{
+  config.integ.waline.enable && config.integ.waline.server ? (
+    <Comment class={className} />
+  ) : (
+    <CommentPlaceholder {locale} class={className} />
+  )
+}

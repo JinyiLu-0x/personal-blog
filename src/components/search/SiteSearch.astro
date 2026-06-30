@@ -1,0 +1,313 @@
+---
+import { Icon } from 'astro-pure/user'
+import type { SiteLocale } from '@/i18n/ui'
+
+interface Props { locale?: SiteLocale }
+
+const { locale = 'en-US' } = Astro.props
+const isChinese = locale === 'zh-CN'
+const labels = isChinese
+  ? {
+      input: '搜索博客、项目、笔记与页面',
+      hint: '输入关键词开始搜索，也可以按 / 快速聚焦。',
+      clear: '清除搜索',
+      searching: '正在搜索…',
+      noResults: '没有找到相关内容，请尝试更短或不同的关键词。',
+      unavailable: '搜索索引尚未生成，请先执行生产构建。',
+      result: '条结果',
+      more: '加载更多',
+      types: { blog: '博客', projects: '项目', notes: '笔记', pages: '页面' }
+    }
+  : {
+      input: 'Search blog posts, projects, notes, and pages',
+      hint: 'Enter a keyword to search, or press / to focus.',
+      clear: 'Clear search',
+      searching: 'Searching…',
+      noResults: 'No matching content. Try a shorter or different keyword.',
+      unavailable: 'The search index is generated during a production build.',
+      result: 'results',
+      more: 'Load more',
+      types: { blog: 'Blog', projects: 'Projects', notes: 'Notes', pages: 'Pages' }
+    }
+---
+
+<site-search
+  class='not-prose block'
+  data-locale={locale}
+  data-labels={JSON.stringify(labels)}
+  data-dev={import.meta.env.DEV ? 'true' : 'false'}
+>
+  <form class='search-form relative' role='search'>
+    <Icon name='search' class='pointer-events-none absolute start-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground' />
+    <input
+      id='site-search-input'
+      class='h-12 w-full rounded-xl border border-border bg-card/65 py-3 ps-12 pe-12 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/55 focus:bg-background focus:ring-4 focus:ring-primary/10'
+      type='search'
+      name='q'
+      placeholder={labels.input}
+      aria-label={labels.input}
+      autocomplete='off'
+      enterkeyhint='search'
+    />
+    <button
+      class='clear-button absolute end-2 top-1/2 hidden size-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45'
+      type='button'
+      aria-label={labels.clear}
+      title={labels.clear}
+    >
+      <span aria-hidden='true'>×</span>
+    </button>
+  </form>
+
+  <p class='search-hint mt-2 text-sm text-muted-foreground'>{labels.hint}</p>
+  <div class='search-status mt-6 text-sm text-muted-foreground' role='status' aria-live='polite'></div>
+  <ol class='search-results mt-3 grid list-none gap-3 p-0' aria-label={labels.input}></ol>
+  <button
+    class='load-more mx-auto mt-5 hidden rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:border-primary/35 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45'
+    type='button'
+  >
+    {labels.more}
+  </button>
+</site-search>
+
+<script>
+  class SiteSearch extends HTMLElement {
+    private input: HTMLInputElement
+    private clearButton: HTMLButtonElement
+    private status: HTMLElement
+    private results: HTMLOListElement
+    private labels: {
+      searching: string
+      noResults: string
+      unavailable: string
+      result: string
+      more: string
+      types: Record<string, string>
+    }
+    private locale: string
+    private pagefind: any = null
+    private debounceTimer = 0
+    private requestId = 0
+    private loadMoreButton: HTMLButtonElement
+    private resultHandles: any[] = []
+    private resultCursor = 0
+    private loadingMore = false
+    private readonly pageSize = 12
+
+    constructor() {
+      super()
+      this.input = this.querySelector('input')!
+      this.clearButton = this.querySelector('.clear-button')!
+      this.status = this.querySelector('.search-status')!
+      this.results = this.querySelector('.search-results')!
+      this.loadMoreButton = this.querySelector('.load-more')!
+      this.labels = JSON.parse(this.dataset.labels ?? '{}')
+      this.locale = this.dataset.locale ?? 'en-US'
+    }
+
+    connectedCallback() {
+      const query = new URLSearchParams(window.location.search).get('q')?.trim() ?? ''
+      this.input.value = query
+      this.toggleClearButton()
+
+      this.querySelector('form')?.addEventListener('submit', (event) => {
+        event.preventDefault()
+        void this.search(this.input.value)
+      })
+      this.input.addEventListener('input', () => {
+        this.requestId += 1
+        this.toggleClearButton()
+        window.clearTimeout(this.debounceTimer)
+        this.debounceTimer = window.setTimeout(() => void this.search(this.input.value), 180)
+      })
+      this.clearButton.addEventListener('click', () => this.clear())
+      this.loadMoreButton.addEventListener('click', () => void this.loadNextPage(this.requestId))
+      document.addEventListener('keydown', this.handleShortcut)
+
+      if (query) void this.search(query)
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('keydown', this.handleShortcut)
+      window.clearTimeout(this.debounceTimer)
+    }
+
+    private handleShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      const isTyping = target?.matches('input, textarea, select, [contenteditable="true"]')
+
+      if (event.key === '/' && !isTyping) {
+        event.preventDefault()
+        this.input.focus()
+      } else if (event.key === 'Escape' && document.activeElement === this.input) {
+        this.clear()
+        this.input.blur()
+      }
+    }
+
+    private async loadPagefind() {
+      if (this.pagefind) return this.pagefind
+      if (this.dataset.dev === 'true') throw new Error('PAGEFIND_DEV_MODE')
+
+      const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+      this.pagefind = await import(/* @vite-ignore */ `${base}/pagefind/pagefind.js`)
+      await this.pagefind.options({ baseUrl: import.meta.env.BASE_URL })
+      return this.pagefind
+    }
+
+    private clear() {
+      this.requestId += 1
+      this.input.value = ''
+      this.results.replaceChildren()
+      this.resultHandles = []
+      this.resultCursor = 0
+      this.loadMoreButton.classList.add('hidden')
+      this.status.textContent = ''
+      this.toggleClearButton()
+      this.updateUrl('')
+      this.input.focus()
+    }
+
+    private toggleClearButton() {
+      this.clearButton.classList.toggle('hidden', !this.input.value)
+      this.clearButton.classList.toggle('flex', Boolean(this.input.value))
+    }
+
+    private updateUrl(query: string) {
+      const url = new URL(window.location.href)
+      query ? url.searchParams.set('q', query) : url.searchParams.delete('q')
+      history.replaceState(history.state, '', `${url.pathname}${url.search}${url.hash}`)
+    }
+
+    private isAllowedUrl(rawUrl: string) {
+      const pathname = new URL(rawUrl, window.location.origin).pathname.replace(/\/$/, '') || '/'
+      const isEnglishPath = pathname === '/en' || pathname.startsWith('/en/')
+      if ((this.locale === 'en-US') !== isEnglishPath) return false
+
+      const canonical = isEnglishPath ? pathname.replace(/^\/en(?=\/|$)/, '') || '/' : pathname
+      return canonical === '/' || /^\/(blog|projects|notes|about|contact)(?:\/|$)/.test(canonical)
+    }
+
+    private getResultType(rawUrl: string) {
+      const pathname = new URL(rawUrl, window.location.origin).pathname.replace(/^\/en(?=\/|$)/, '')
+      if (pathname.startsWith('/blog')) return 'blog'
+      if (pathname.startsWith('/projects')) return 'projects'
+      if (pathname.startsWith('/notes')) return 'notes'
+      return 'pages'
+    }
+
+    private renderResults(items: any[], append = false) {
+      const nodes = items.map((item) => {
+          const type = this.getResultType(item.url)
+          const li = document.createElement('li')
+          const link = document.createElement('a')
+          const heading = document.createElement('div')
+          const badge = document.createElement('span')
+          const title = document.createElement('span')
+          const excerpt = document.createElement('p')
+
+          link.href = item.url.replace(/(.)\/(#.*)?$/, '$1$2')
+          link.className = 'block rounded-xl border border-border/75 bg-card/55 p-4 no-underline transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/65 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 motion-reduce:transform-none'
+          heading.className = 'flex flex-wrap items-center gap-2'
+          badge.className = 'rounded-md border border-border bg-muted px-1.5 py-0.5 text-[0.7rem] font-medium text-muted-foreground'
+          title.className = 'font-medium text-foreground'
+          excerpt.className = 'mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground'
+
+          badge.textContent = this.labels.types[type] ?? type
+          title.textContent = item.meta?.title || item.url
+          excerpt.innerHTML = item.excerpt || ''
+          heading.append(badge, title)
+          link.append(heading, excerpt)
+          li.append(link)
+          return li
+        })
+
+      append ? this.results.append(...nodes) : this.results.replaceChildren(...nodes)
+    }
+
+    private async loadNextPage(request: number) {
+      if (this.loadingMore || this.resultCursor >= this.resultHandles.length) return
+      this.loadingMore = true
+      this.loadMoreButton.disabled = true
+
+      const pageItems: any[] = []
+      try {
+        while (pageItems.length < this.pageSize && this.resultCursor < this.resultHandles.length) {
+          const remaining = this.pageSize - pageItems.length
+          const batch = this.resultHandles.slice(
+            this.resultCursor,
+            this.resultCursor + remaining
+          )
+          this.resultCursor += batch.length
+          const data = await Promise.all(batch.map((result: any) => result.data()))
+          if (request !== this.requestId) return
+          pageItems.push(...data.filter((item) => this.isAllowedUrl(item.url)))
+        }
+
+        this.renderResults(pageItems.slice(0, this.pageSize), this.results.children.length > 0)
+        const shown = this.results.children.length
+        this.status.textContent = shown
+          ? `${shown} ${this.labels.result}`
+          : this.labels.noResults
+        this.loadMoreButton.classList.toggle('hidden', this.resultCursor >= this.resultHandles.length)
+      } finally {
+        if (request === this.requestId) {
+          this.loadingMore = false
+          this.loadMoreButton.disabled = false
+        }
+      }
+    }
+
+    private async search(rawQuery: string) {
+      const query = rawQuery.trim()
+      const currentRequest = ++this.requestId
+      this.updateUrl(query)
+
+      if (!query) {
+        this.results.replaceChildren()
+        this.resultHandles = []
+        this.resultCursor = 0
+        this.loadMoreButton.classList.add('hidden')
+        this.status.textContent = ''
+        return
+      }
+
+      this.status.textContent = this.labels.searching
+      try {
+        const pagefind = await this.loadPagefind()
+        const search = await pagefind.debouncedSearch(query)
+        if (currentRequest !== this.requestId) return
+
+        this.results.replaceChildren()
+        this.resultHandles = search?.results ?? []
+        this.resultCursor = 0
+        this.loadingMore = false
+        this.loadMoreButton.classList.add('hidden')
+
+        if (!this.resultHandles.length) {
+          this.status.textContent = this.labels.noResults
+          return
+        }
+
+        await this.loadNextPage(currentRequest)
+      } catch (error) {
+        if (currentRequest !== this.requestId) return
+        this.results.replaceChildren()
+        this.loadMoreButton.classList.add('hidden')
+        this.status.textContent = this.labels.unavailable
+        if ((error as Error).message !== 'PAGEFIND_DEV_MODE') console.error(error)
+      }
+    }
+  }
+
+  if (!customElements.get('site-search')) customElements.define('site-search', SiteSearch)
+</script>
+
+<style>
+  site-search :global(mark) {
+    border-radius: 0.2rem;
+    background: hsl(var(--primary) / 0.14);
+    color: hsl(var(--foreground));
+    padding-inline: 0.1rem;
+  }
+</style>

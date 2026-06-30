@@ -1,0 +1,115 @@
+---
+import { Image } from 'astro:assets'
+import { Icon } from 'astro-pure/user'
+import { resume } from '@/data/resume'
+import { profile } from '@/site-config'
+import type { SiteLocale } from '@/i18n/ui'
+import xiaohongshuQr from '@/assets/xiaohongshu-qr.jpg'
+
+interface Props { locale?: SiteLocale }
+const { locale = 'zh-CN' } = Astro.props
+const isChinese = locale === 'zh-CN'
+---
+
+<section class='not-prose mt-7 rounded-2xl border border-border/80 p-3 sm:p-4'>
+  <div class='grid gap-1 sm:grid-cols-2 sm:gap-x-3'>
+    <a class='social-item' href={`mailto:${resume.email}`}>
+      <span class='social-icon text-primary'><Icon name='email' class='size-5' /></span>
+      <span><strong>Email</strong><small>{resume.email}</small></span>
+    </a>
+
+    <a class='social-item' href={resume.whatsappLink} target='_blank'>
+      <span class='social-icon bg-[#25D366] text-white'>
+        <svg viewBox='0 0 24 24' class='size-5' fill='none' stroke='currentColor' stroke-width='2'>
+          <path d='M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.8a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z' />
+        </svg>
+      </span>
+      <span><strong>WhatsApp</strong><small>{resume.whatsapp}</small></span>
+    </a>
+
+    <a class='social-item' href={profile.github} target='_blank'>
+      <span class='social-icon'><Icon name='github' class='size-5' /></span>
+      <span><strong>GitHub</strong><small>JinyiLu-0x</small></span>
+    </a>
+
+    <a class='social-item' href={resume.linkedin} target='_blank'>
+      <span class='social-icon bg-[#0A66C2] text-sm font-bold text-white'>in</span>
+      <span><strong>LinkedIn</strong><small>{isChinese ? '职业资料' : 'Professional profile'}</small></span>
+    </a>
+
+    <div class='social-item cursor-default'>
+      <span class='social-icon text-[#5865F2]'><Icon name='discord' class='size-5' /></span>
+      <span><strong>Discord</strong><small>{resume.discord}</small></span>
+    </div>
+
+    <div class='group/xhs relative'>
+      <button class='social-item w-full text-start' type='button' aria-label={isChinese ? '查看小红书二维码' : 'View RedNote QR code'}>
+        <span class='flex h-9 min-w-9 items-center justify-center rounded-lg bg-[#ff2442] px-1.5 text-[10px] font-bold text-white'>{isChinese ? '小红书' : 'RED'}</span>
+        <span><strong>{isChinese ? '小红书' : 'RedNote'}</strong><small>{resume.xiaohongshu}</small></span>
+        <span class='ms-auto text-xs text-muted-foreground opacity-60 transition-transform group-hover/xhs:translate-x-0.5'>↗</span>
+      </button>
+
+      <div
+        class='pointer-events-none absolute end-0 top-[calc(100%+.5rem)] z-30 w-[min(22rem,calc(100vw-3rem))] translate-y-1 rounded-2xl border bg-background p-3 opacity-0 shadow-xl transition-all duration-200 group-hover/xhs:translate-y-0 group-hover/xhs:opacity-100 group-focus-within/xhs:translate-y-0 group-focus-within/xhs:opacity-100'
+      >
+        <Image
+          src={xiaohongshuQr}
+          alt={isChinese ? 'DevGitMoz 小红书二维码' : 'DevGitMoz RedNote QR code'}
+          class='w-full rounded-xl object-contain'
+          widths={[352, 704]}
+          sizes='22rem'
+        />
+        <div class='mt-2 flex items-center justify-between px-1 text-xs text-muted-foreground'>
+          <span>{isChinese ? '扫码关注' : 'Scan to follow'}</span>
+          <strong class='text-foreground'>{resume.xiaohongshu}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .social-item {
+    display: flex;
+    min-height: 3.75rem;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.65rem;
+    color: hsl(var(--foreground));
+    text-decoration: none;
+    transition: background-color 180ms ease, transform 180ms ease;
+  }
+  .social-item:hover,
+  .social-item:focus-visible {
+    background: hsl(var(--muted) / 0.72);
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .social-item > span:nth-child(2) {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  .social-item strong { font-size: 0.9rem; font-weight: 500; }
+  .social-item small {
+    overflow: hidden;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .social-icon {
+    display: flex;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.65rem;
+    background-color: hsl(var(--muted));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .social-item { transition: none; }
+    .social-item:hover { transform: none; }
+  }
+</style>

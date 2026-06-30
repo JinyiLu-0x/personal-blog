@@ -1,0 +1,16 @@
+---
+import type { GetStaticPaths, Page } from 'astro'
+import TagPage from '../../../tags/[tag]/[...page].astro'
+import { getAllTaggedContent, getTagsWithCount, type TaggedContentItem } from '@/utils/content'
+import config from '@/site-config'
+
+export const prerender = true
+export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
+  const items = await getAllTaggedContent('en-US')
+  const tags = getTagsWithCount(items).map(([tag]) => tag)
+  return tags.flatMap((tag) => paginate(items.filter((item) => item.tags.includes(tag)), { pageSize: config.content.blogPageSize, params: { tag } }))
+}
+interface Props { page: Page<TaggedContentItem> }
+const { page } = Astro.props
+---
+<TagPage {page} locale='en-US' />
