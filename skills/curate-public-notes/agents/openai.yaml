@@ -1,0 +1,4 @@
+interface:
+  display_name: "Curate Public Notes"
+  short_description: "将原始记录安全整理为可发布的 Astro Notes 内容"
+  default_prompt: "Use $curate-public-notes to preserve my wording and reasoning chain, distinguish my own thoughts from quotations, anonymize only what is necessary, label untried tools honestly, and include images only when they add information the prose cannot replace."

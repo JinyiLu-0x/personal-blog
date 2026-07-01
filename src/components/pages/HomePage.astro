@@ -76,10 +76,25 @@ const projectStatus = locale === 'zh-CN'
 
     <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
       <Section title={ui.home.about}>
-        <p class='text-muted-foreground'>
+        <p class='px-3.5 text-muted-foreground'>
           {ui.home.intro}
         </p>
-        <p class='text-muted-foreground'>{ui.home.currently}：{ui.home.currentlyValue}。</p>
+        <div
+          class='w-full overflow-hidden rounded-xl border border-white/90 bg-white/40 px-3.5 py-2 text-[10px] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_8px_24px_-20px_rgba(51,92,119,0.8)] backdrop-blur-xl sm:text-xs dark:border-white/10 dark:bg-white/[0.05]'
+        >
+          <span class='min-w-max whitespace-nowrap text-foreground/80'>
+            <span class='sm:hidden'>
+              {locale === 'zh-CN' ? '蒙纳士大学（QS 前 50）· IT 本科 · 2027.12 毕业' : 'Monash · Bachelor of IT · Dec 2027'}
+            </span>
+            <span class='hidden sm:inline'>
+              {
+                locale === 'zh-CN'
+                  ? '目前就读于蒙纳士大学（QS 世界前 50）· IT 本科 · 预计 2027 年 12 月毕业'
+                  : 'Currently at Monash University · Bachelor of IT · Expected graduation December 2027'
+              }
+            </span>
+          </span>
+        </div>
         <Button title={ui.home.moreAbout} class='w-fit self-end' href={localizedPath('/about', locale)} variant='ahead' />
       </Section>
 
@@ -106,6 +121,7 @@ const projectStatus = locale === 'zh-CN'
                   href={localizedPath(`/notes/${getCanonicalId(note)}`, locale)}
                   heading={note.data.title}
                   subheading={note.data.summary}
+                  class='bg-background transition-colors hover:bg-muted'
                 />
               ))}
             </div>
@@ -132,28 +148,6 @@ const projectStatus = locale === 'zh-CN'
           </Section>
         )
       }
-
-      <Section title={ui.home.education}>
-        <div class='flex flex-col gap-y-3'>
-          {
-            resume.education.map((item) => (
-              <Card
-                heading={locale === 'zh-CN' ? item.institutionZh : item.institution}
-                subheading={locale === 'zh-CN' ? item.degreeZh : item.degree}
-                date={`${locale === 'zh-CN' ? item.periodZh : item.period} · ${locale === 'zh-CN' ? item.locationZh : item.location}`}
-              >
-                {item.awards.length > 0 && (
-                  <p class='mt-1 text-sm text-muted-foreground'>
-                    <span class='font-medium text-foreground/80'>{ui.home.award}：</span>
-                    {(locale === 'zh-CN' ? item.awardsZh : item.awards).join(' · ')}
-                  </p>
-                )}
-              </Card>
-            ))
-          }
-        </div>
-        <Button title={ui.home.moreAbout} class='w-fit self-end' href={localizedPath('/about', locale)} variant='ahead' />
-      </Section>
 
       <Section title={ui.home.skills}>
         {resume.skills.map((group, index) => (

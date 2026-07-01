@@ -24,29 +24,51 @@ const typeLabelsZh = {
 const typeLabelsEn = { thought: 'Thought', 'external-link': 'External link', clipping: 'Clipping', learning: 'Learning note', project: 'Project note' } as const
 const typeLabels = locale === 'zh-CN' ? typeLabelsZh : typeLabelsEn
 const href = localizedPath(`/notes/${getCanonicalId(note)}`, locale)
+const isBookmarked = data.bookmarked || data.bucket === 'learn-later'
+const isImportant = data.important || data.bucket === 'saved'
 ---
 
 <article
-  class='rounded-2xl border bg-background px-5 py-3 transition-all hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-muted hover:shadow-sm motion-reduce:transform-none'
+  data-note-card
+  data-bookmarked={isBookmarked ? 'true' : 'false'}
+  data-important={isImportant ? 'true' : 'false'}
+  class:list={[
+    'relative rounded-2xl border bg-background px-5 py-3 transition-all hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-muted hover:shadow-sm motion-reduce:transform-none'
+  ]}
 >
-  <div class='mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
+  {
+    (isBookmarked || isImportant) && (
+      <div class='absolute end-4 top-4 flex items-center gap-1.5'>
+      {isBookmarked && (
+        <span
+          class='text-muted-foreground'
+          role='img'
+          aria-label={locale === 'zh-CN' ? '已标记' : 'Marked'}
+          title={locale === 'zh-CN' ? '已标记' : 'Marked'}
+        >
+          <svg class='size-5' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
+            <path d='M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-3.75L6 21V4.75Z' />
+          </svg>
+        </span>
+      )}
+      {isImportant && (
+      <span
+        class='text-amber-500/85'
+        role='img'
+        aria-label={locale === 'zh-CN' ? '重要' : 'Important'}
+        title={locale === 'zh-CN' ? '重要' : 'Important'}
+      >
+        <svg class='size-5' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
+          <path d='m12 3 2.78 5.63 6.22.91-4.5 4.38 1.06 6.19L12 17.19l-5.56 2.92 1.06-6.19L3 9.54l6.22-.91L12 3Z' />
+        </svg>
+      </span>
+      )}
+      </div>
+    )
+  }
+
+  <div class='mb-3 flex flex-wrap items-center gap-2 pe-8 text-xs text-muted-foreground'>
     <span class='rounded-full border bg-muted px-2 py-1'>{typeLabels[data.type]}</span>
-    {
-      data.bucket === 'saved' && (
-        <span class='flex items-center gap-1'>
-          <Icon name='link' class='size-4' />
-          {locale === 'zh-CN' ? '已收藏' : 'Saved'}
-        </span>
-      )
-    }
-    {
-      data.bucket === 'learn-later' && (
-        <span class='flex items-center gap-1'>
-          <Icon name='bulb' class='size-4' />
-          {locale === 'zh-CN' ? '稍后学习' : 'Learn Later'}
-        </span>
-      )
-    }
     <LocalizedDate date={data.updatedDate ?? data.publishDate} {locale} />
   </div>
 
@@ -89,6 +111,7 @@ const href = localizedPath(`/notes/${getCanonicalId(note)}`, locale)
           rel='noreferrer'
           class='flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary'
         >
+          <Icon name='link' class='size-4' />
           {data.source ?? (locale === 'zh-CN' ? '打开来源' : 'Open source')} <span aria-hidden='true'>↗</span>
         </a>
       )

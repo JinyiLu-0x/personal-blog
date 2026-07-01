@@ -100,6 +100,8 @@ const notes = defineCollection({
         summary: z.string().max(240),
         comment: z.string().max(500).optional(),
         bucket: z.enum(['saved', 'learn-later']).optional(),
+        bookmarked: z.boolean().default(false),
+        important: z.boolean().default(false),
         visibility: z.enum(['public', 'unlisted']).default('public'),
         locale: z.enum(['zh-CN', 'en-US']).default('zh-CN'),
         translationKey: z.string().optional(),

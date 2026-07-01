@@ -9,9 +9,9 @@ techStack:
 role: '设计、内容架构与实现'
 status: 'building'
 tags:
-  - Web
-  - Learning
-  - Tools
+  - 网站开发
+  - 学习
+  - 工具
 featured: false
 order: 4
 locale: 'zh-CN'

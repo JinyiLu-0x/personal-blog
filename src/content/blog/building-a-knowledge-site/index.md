@@ -4,8 +4,8 @@ publishDate: 2026-06-28
 description: '记录这个网站第一阶段的信息架构、范围选择和实现原则。'
 tags:
   - Astro
-  - Web
-  - Learning
+  - 网站开发
+  - 学习
 language: '中文'
 locale: 'zh-CN'
 translationKey: 'building-a-knowledge-site'

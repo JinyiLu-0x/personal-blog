@@ -12,6 +12,8 @@ const { locale = 'zh-CN' } = Astro.props
 const notes = await getPublicNotes(locale)
 const ui = getUi(locale)
 const isChinese = locale === 'zh-CN'
+const bookmarkedCount = notes.filter((note) => note.data.bookmarked || note.data.bucket === 'learn-later').length
+const importantCount = notes.filter((note) => note.data.important || note.data.bucket === 'saved').length
 
 const meta = {
   title: ui.pages.notes,
@@ -29,8 +31,102 @@ const meta = {
       id='content-header'
     />
 
+    <div class='mb-5 flex flex-wrap items-center gap-2' aria-label={isChinese ? '筛选笔记' : 'Filter notes'}>
+      <button class='note-filter' type='button' data-note-filter='all' aria-pressed='true'>
+        {isChinese ? '全部' : 'All'} <span>{notes.length}</span>
+      </button>
+      <button class='note-filter' type='button' data-note-filter='bookmarked' aria-pressed='false'>
+        <svg viewBox='0 0 24 24' aria-hidden='true'><path d='M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-3.75L6 21V4.75Z' /></svg>
+        {isChinese ? '书签' : 'Marked'} <span>{bookmarkedCount}</span>
+      </button>
+      <button class='note-filter' type='button' data-note-filter='important' aria-pressed='false'>
+        <svg class='text-amber-500/85' viewBox='0 0 24 24' aria-hidden='true'><path d='m12 3 2.78 5.63 6.22.91-4.5 4.38 1.06 6.19L12 17.19l-5.56 2.92 1.06-6.19L3 9.54l6.22-.91L12 3Z' /></svg>
+        {isChinese ? '重要' : 'Important'} <span>{importantCount}</span>
+      </button>
+    </div>
+
     <section id='content' class='animate grid gap-3' aria-label='Notes list'>
       {notes.length > 0 ? notes.map((note) => <NoteCard {note} {locale} />) : <p>{isChinese ? '暂时没有公开笔记。' : 'No public notes yet.'}</p>}
     </section>
+    <p class='mt-8 text-center text-sm text-muted-foreground' data-note-filter-empty hidden>
+      {isChinese ? '这个筛选里暂时没有内容。' : 'No notes match this filter.'}
+    </p>
   </main>
 </PageLayout>
+
+<script>
+  const setupNoteFilters = () => {
+    const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-note-filter]'))
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-note-card]'))
+    const empty = document.querySelector<HTMLElement>('[data-note-filter-empty]')
+    if (!buttons.length || !cards.length) return
+    if (buttons[0]?.dataset.filterReady === 'true') return
+    buttons.forEach((button) => { button.dataset.filterReady = 'true' })
+
+    const applyFilter = (filter: string) => {
+      let visible = 0
+      cards.forEach((card) => {
+        const matches = filter === 'all' || card.dataset[filter] === 'true'
+        card.hidden = !matches
+        if (matches) visible += 1
+      })
+      buttons.forEach((button) => {
+        const active = button.dataset.noteFilter === filter
+        button.setAttribute('aria-pressed', String(active))
+      })
+      if (empty) empty.hidden = visible !== 0
+
+      const url = new URL(window.location.href)
+      if (filter === 'all') url.searchParams.delete('filter')
+      else url.searchParams.set('filter', filter)
+      history.replaceState(history.state, '', `${url.pathname}${url.search}${url.hash}`)
+    }
+
+    const requested = new URLSearchParams(window.location.search).get('filter')
+    const initial = requested === 'bookmarked' || requested === 'important' ? requested : 'all'
+    applyFilter(initial)
+    buttons.forEach((button) => button.addEventListener('click', () => applyFilter(button.dataset.noteFilter ?? 'all')))
+  }
+
+  document.addEventListener('astro:page-load', setupNoteFilters)
+  setupNoteFilters()
+</script>
+
+<style>
+  .note-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+    transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+  }
+
+  .note-filter:hover,
+  .note-filter[aria-pressed='true'] {
+    border-color: hsl(var(--foreground) / 0.25);
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+
+  .note-filter svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  [data-note-card][hidden] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .note-filter { transition: none; }
+  }
+</style>

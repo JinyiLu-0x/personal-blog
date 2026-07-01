@@ -7,8 +7,7 @@ export const profile = {
   displayName: 'Moz',
   github: 'https://github.com/JinyiLu-0x/',
   role: 'Software Developer · Product-minded builder',
-  focus: ['Web Development', 'Product Thinking', 'Learning Systems'],
-  currently: 'Building a personal blog and knowledge publishing system'
+  focus: ['Web Development', 'Product Thinking', 'Learning Systems']
 } as const
 
 export const theme: ThemeUserConfig = {

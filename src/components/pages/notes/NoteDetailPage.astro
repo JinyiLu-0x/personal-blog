@@ -2,6 +2,7 @@
 import { render, type CollectionEntry } from 'astro:content'
 
 import { TOC } from 'astro-pure/components/pages'
+import { Icon } from 'astro-pure/user'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import { localizedPath, type SiteLocale } from '@/i18n/ui'
 import LocalizedDate from '@/components/common/LocalizedDate.astro'
@@ -34,12 +35,13 @@ const isChinese = locale === 'zh-CN'
     {
       data.externalUrl && (
         <a
-          class='mt-4 inline-flex font-medium'
+          class='mt-4 inline-flex items-center gap-1.5 font-medium'
           href={data.externalUrl}
           target='_blank'
           rel='noreferrer'
         >
-          {isChinese ? '打开原始来源' : 'Open original source'} ↗
+          <Icon name='link' class='size-4' />
+          {isChinese ? '打开原始来源' : 'Open original source'} <span aria-hidden='true'>↗</span>
         </a>
       )
     }

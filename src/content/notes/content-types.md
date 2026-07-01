@@ -2,9 +2,9 @@
 title: '为什么把博客、项目和笔记分开'
 publishDate: 2026-06-28
 tags:
-  - Learning
-  - Product
-  - Web
+  - 学习
+  - 产品
+  - 网站开发
 type: 'thought'
 summary: '三种内容承担不同任务：博客解释完整过程，项目提供实践证据，笔记保存轻量上下文。'
 comment: '区分内容类型不是增加层级，而是让每条内容以适合它的密度出现。'

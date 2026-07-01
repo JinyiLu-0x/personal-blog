@@ -5,7 +5,7 @@ publishDate: 2026-06-26
 techStack: [Linux, Raspberry Pi, Nextcloud, Apache, PHP, MySQL, Tailscale]
 role: '基础设施设计、配置与部署'
 status: 'complete'
-tags: [Cloud, Cybersecurity, Tools]
+tags: [云计算, 网络安全, 工具]
 featured: false
 order: 3
 locale: 'zh-CN'

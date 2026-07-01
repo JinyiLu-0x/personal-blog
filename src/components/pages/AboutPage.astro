@@ -14,7 +14,6 @@ const isChinese = locale === 'zh-CN'
 
 const headings = [
   { depth: 2, slug: 'professional-summary', text: ui.pages.professionalSummary },
-  { depth: 2, slug: 'education', text: ui.pages.education },
   { depth: 2, slug: 'selected-projects', text: ui.pages.selectedProjects },
   { depth: 2, slug: 'skills', text: ui.pages.skills },
   { depth: 2, slug: 'tools', text: isChinese ? '常用工具' : 'Tools' },
@@ -37,29 +36,6 @@ const headings = [
     <Button title={ui.pages.projects} href={localizedPath('/projects', locale)} variant='ahead' />
     <Button title='GitHub' href={profile.github} target='_blank' />
     <Button title={ui.pages.contact} href={localizedPath('/contact', locale)} />
-  </div>
-
-  <h2 id='education'>{ui.pages.education}</h2>
-  <div class='not-prose grid gap-4'>
-    {
-      resume.education.map((item) => (
-        <article class='rounded-xl border bg-background p-5 transition-colors hover:bg-muted'>
-          <div class='flex flex-col justify-between gap-1 sm:flex-row sm:gap-5'>
-            <div>
-              <h3 class='font-medium'>{isChinese ? item.institutionZh : item.institution}</h3>
-              <p class='mt-1 text-sm text-muted-foreground'>{isChinese ? item.degreeZh : item.degree}</p>
-            </div>
-            <p class='shrink-0 text-sm text-muted-foreground'>{isChinese ? item.periodZh : item.period}</p>
-          </div>
-          <p class='mt-2 text-sm text-muted-foreground'>{isChinese ? item.locationZh : item.location}</p>
-          <ul class='mt-3 flex flex-wrap gap-2'>
-            {[...item.details, ...(isChinese ? item.awardsZh : item.awards)].map((detail) => (
-              <li class='rounded-full border bg-muted px-2.5 py-1 text-xs'>{detail}</li>
-            ))}
-          </ul>
-        </article>
-      ))
-    }
   </div>
 
   <h2 id='selected-projects'>{ui.pages.selectedProjects}</h2>

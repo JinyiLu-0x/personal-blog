@@ -5,7 +5,7 @@ publishDate: 2026-06-26
 techStack: [Salesforce, Apex, Omni-Channel, Workflow Builder]
 role: '解决方案架构与 Salesforce 开发'
 status: 'complete'
-tags: [Salesforce, AI, Cloud]
+tags: [Salesforce, AI, 云计算]
 featured: true
 order: 1
 locale: 'zh-CN'
