@@ -1,64 +1,27 @@
 ---
 import type { GetStaticPaths, Page } from 'astro'
-
-import { Paginator } from 'astro-pure/components/pages'
-import PageLayout from '@/layouts/BaseLayout.astro'
-import PageHeader from '@/components/common/PageHeader.astro'
-import TaggedItemCard from '@/components/tags/TaggedItemCard.astro'
+import TagPage from '@/components/pages/tags/TagPage.astro'
 import { getAllTaggedContent, getTagsWithCount, type TaggedContentItem } from '@/utils/content'
 import config from '@/site-config'
-import { formatTag, localizedPath, type SiteLocale } from '@/i18n/ui'
-import SmartBackButton from '@/components/common/SmartBackButton.astro'
 
 export const prerender = true
 
 export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
   const items = await getAllTaggedContent('zh-CN')
   const tags = getTagsWithCount(items).map(([tag]) => tag)
-
   return tags.flatMap((tag) =>
-    paginate(
-      items.filter((item) => item.tags.includes(tag)),
-      { pageSize: config.content.blogPageSize, params: { tag } }
-    )
+    paginate(items.filter((item) => item.tags.includes(tag)), {
+      pageSize: config.content.blogPageSize,
+      params: { tag }
+    })
   )
 }
 
 interface Props {
   page: Page<TaggedContentItem>
-  locale?: SiteLocale
 }
 
-const { page, locale = 'zh-CN' } = Astro.props
-const { tag } = Astro.params
-const isChinese = locale === 'zh-CN'
-const displayTag = formatTag(tag ?? '', locale)
-
-const meta = {
-  description: isChinese ? `标签为 ${displayTag} 的公开博客、项目和笔记。` : `Public blog posts, projects, and notes tagged ${displayTag}.`,
-  title: isChinese ? `标签：${displayTag}` : `Tag: ${displayTag}`
-}
-
-const paginationProps = {
-  ...(page.url.prev && { prevUrl: { text: isChinese ? '← 上一页' : '← Previous', url: page.url.prev } }),
-  ...(page.url.next && { nextUrl: { text: isChinese ? '下一页 →' : 'Next →', url: page.url.next } })
-}
+const { page } = Astro.props
 ---
 
-<PageLayout {meta} {locale}>
-  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
-    <SmartBackButton fallback={localizedPath('/tags', locale)} {locale} />
-    <PageHeader
-      title={`#${displayTag}`}
-      eyebrow={localizedPath(`/tags/${tag}`, locale)}
-      subtitle={isChinese ? `博客、项目和笔记中共有 ${page.total} 条公开内容。` : `${page.total} public items across Blog, Projects, and Notes.`}
-      class='animate mb-8 mt-6 sm:mt-10'
-      id='content-header'
-    />
-
-    <section id='content' class='animate grid gap-4' aria-label={`Content tagged ${tag}`}>
-      {page.data.map((item) => <TaggedItemCard {item} {locale} />)}
-      <Paginator {...paginationProps} />
-    </section>
-  </main>
-</PageLayout>
+<TagPage {page} />

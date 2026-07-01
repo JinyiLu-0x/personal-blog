@@ -1,0 +1,20 @@
+---
+import PageLayout from '@/layouts/CommonPage.astro'
+import { getUi, type SiteLocale } from '@/i18n/ui'
+import SocialNetworks from '@/components/contact/SocialNetworks.astro'
+
+interface Props { locale?: SiteLocale }
+const { locale = 'zh-CN' } = Astro.props
+const ui = getUi(locale)
+---
+
+<PageLayout
+  title={ui.pages.contact}
+  subtitle={ui.pages.contactSubtitle}
+  headings={[]}
+  {locale}
+>
+  <p>{ui.pages.contactIntro}</p>
+
+  <SocialNetworks {locale} />
+</PageLayout>

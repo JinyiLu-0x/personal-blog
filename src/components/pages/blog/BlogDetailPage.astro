@@ -1,0 +1,17 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+
+import PostLayout from '@/layouts/BlogPost.astro'
+
+type Props = {
+  post: CollectionEntry<'blog'>
+  posts: CollectionEntry<'blog'>[]
+}
+
+const { post, posts } = Astro.props
+const { Content, headings, remarkPluginFrontmatter } = await render(post)
+---
+
+<PostLayout {post} {posts} {headings} {remarkPluginFrontmatter}>
+  <Content />
+</PostLayout>

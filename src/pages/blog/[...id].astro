@@ -1,7 +1,6 @@
 ---
-import { render, type CollectionEntry } from 'astro:content'
-
-import PostLayout from '@/layouts/BlogPost.astro'
+import type { CollectionEntry } from 'astro:content'
+import BlogDetailPage from '@/components/pages/blog/BlogDetailPage.astro'
 import { getCanonicalId, getPublishedBlogPosts } from '@/utils/content'
 
 export const prerender = true
@@ -14,15 +13,12 @@ export async function getStaticPaths() {
   }))
 }
 
-type Props = {
+interface Props {
   post: CollectionEntry<'blog'>
   posts: CollectionEntry<'blog'>[]
 }
 
 const { post, posts } = Astro.props
-const { Content, headings, remarkPluginFrontmatter } = await render(post)
 ---
 
-<PostLayout {post} {posts} {headings} {remarkPluginFrontmatter}>
-  <Content />
-</PostLayout>
+<BlogDetailPage {post} {posts} />

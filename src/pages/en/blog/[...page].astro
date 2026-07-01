@@ -2,7 +2,7 @@
 import type { GetStaticPaths, Page } from 'astro'
 import type { CollectionEntry } from 'astro:content'
 import { getUniqueTagsWithCount } from 'astro-pure/server'
-import BlogPage from '../../blog/[...page].astro'
+import BlogPage from '@/components/pages/blog/BlogIndexPage.astro'
 import { getPublishedBlogPosts } from '@/utils/content'
 import config from '@/site-config'
 

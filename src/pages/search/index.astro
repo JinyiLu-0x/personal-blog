@@ -1,42 +1,7 @@
 ---
-import PageLayout from '@/layouts/BaseLayout.astro'
-import PageHeader from '@/components/common/PageHeader.astro'
-import { integ } from '@/site-config'
-import { getUi, localizedPath, type SiteLocale } from '@/i18n/ui'
-import SmartBackButton from '@/components/common/SmartBackButton.astro'
-import SiteSearch from '@/components/search/SiteSearch.astro'
+import SearchPage from '@/components/pages/SearchPage.astro'
 
 export const prerender = true
-interface Props { locale?: SiteLocale }
-const { locale = 'zh-CN' } = Astro.props
-const ui = getUi(locale)
-
-const meta = {
-  description: ui.pages.searchSubtitle,
-  title: ui.pages.search
-}
 ---
 
-<PageLayout {meta} {locale}>
-  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
-    <SmartBackButton fallback={localizedPath('/blog', locale)} {locale} />
-    <PageHeader
-      title={ui.pages.search}
-      subtitle={meta.description}
-      class='animate mb-8 mt-6 sm:mt-10'
-      id='content-header'
-    />
-
-    <div id='content' class='animate'>
-      {
-        integ.pagefind ? (
-          <>
-            <SiteSearch {locale} />
-          </>
-        ) : (
-          <p>{locale === 'zh-CN' ? 'Pagefind 当前未启用。' : 'Pagefind is disabled.'}</p>
-        )
-      }
-    </div>
-  </main>
-</PageLayout>
+<SearchPage />

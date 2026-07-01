@@ -1,0 +1,36 @@
+---
+import PageLayout from '@/layouts/BaseLayout.astro'
+import PageHeader from '@/components/common/PageHeader.astro'
+import NoteCard from '@/components/notes/NoteCard.astro'
+import { getPublicNotes } from '@/utils/content'
+import { getUi } from '@/i18n/ui'
+import type { SiteLocale } from '@/i18n/ui'
+import SmartBackButton from '@/components/common/SmartBackButton.astro'
+
+interface Props { locale?: SiteLocale }
+const { locale = 'zh-CN' } = Astro.props
+const notes = await getPublicNotes(locale)
+const ui = getUi(locale)
+const isChinese = locale === 'zh-CN'
+
+const meta = {
+  title: ui.pages.notes,
+  description: ui.pages.notesSubtitle
+}
+---
+
+<PageLayout {meta} {locale}>
+  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
+    <SmartBackButton fallback={locale === 'en-US' ? '/en' : '/'} {locale} />
+    <PageHeader
+      title={ui.pages.notes}
+      subtitle={ui.pages.notesSubtitle}
+      class='animate mb-8 mt-6 sm:mt-10'
+      id='content-header'
+    />
+
+    <section id='content' class='animate grid gap-3' aria-label='Notes list'>
+      {notes.length > 0 ? notes.map((note) => <NoteCard {note} {locale} />) : <p>{isChinese ? '暂时没有公开笔记。' : 'No public notes yet.'}</p>}
+    </section>
+  </main>
+</PageLayout>

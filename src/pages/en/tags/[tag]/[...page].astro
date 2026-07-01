@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths, Page } from 'astro'
-import TagPage from '../../../tags/[tag]/[...page].astro'
+import TagPage from '@/components/pages/tags/TagPage.astro'
 import { getAllTaggedContent, getTagsWithCount, type TaggedContentItem } from '@/utils/content'
 import config from '@/site-config'
 

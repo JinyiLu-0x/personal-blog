@@ -1,0 +1,94 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+
+import { TOC } from 'astro-pure/components/pages'
+import { Icon } from 'astro-pure/user'
+import PageLayout from '@/layouts/ContentLayout.astro'
+import { localizedPath, type SiteLocale } from '@/i18n/ui'
+import LocalizedDate from '@/components/common/LocalizedDate.astro'
+import CommentsSection from '@/components/blog/CommentsSection.astro'
+import { PageInfo } from '@/components/waline'
+
+interface Props {
+  project: CollectionEntry<'projects'>
+}
+
+const { project } = Astro.props as Props
+const { Content, headings } = await render(project)
+const { data } = project
+const locale = data.locale as SiteLocale
+const isChinese = locale === 'zh-CN'
+const statusLabels = isChinese
+  ? { building: '开发中', active: '进行中', maintained: '维护中', complete: '已完成', archived: '已归档', concept: '概念阶段' }
+  : { building: 'Building', active: 'Active', maintained: 'Maintained', complete: 'Complete', archived: 'Archived', concept: 'Concept' }
+---
+
+<PageLayout meta={{ title: data.title, description: data.description }} back={localizedPath('/projects', locale)} {locale} hasSidebar={headings.length > 0}>
+  {!!headings.length && <TOC {headings} slot='sidebar' />}
+
+  <Fragment slot='header'>
+    <p class='mb-3 font-mono text-sm text-primary'>{isChinese ? '项目' : 'Project'} · {statusLabels[data.status]}</p>
+    <h1 class='text-2xl font-medium sm:text-3xl'>{data.title}</h1>
+    <p class='mt-3 max-w-2xl text-muted-foreground'>{data.description}</p>
+    <div class='mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+      <LocalizedDate date={data.updatedDate ?? data.publishDate} {locale} />
+      <span>{isChinese ? '角色：' : 'Role: '}{data.role}</span>
+    </div>
+    <PageInfo comment class='mt-2 italic' />
+    <ul class='mt-4 flex flex-wrap gap-2' aria-label='Technology stack'>
+      {
+        data.techStack.map((technology) => (
+          <li class='rounded-full bg-muted px-3 py-1 text-xs'>{technology}</li>
+        ))
+      }
+    </ul>
+    <div class='mt-4 flex gap-4'>
+      {
+        data.links.github && (
+          <a
+            class='flex items-center gap-1 font-medium'
+            href={data.links.github}
+            target='_blank'
+            rel='noreferrer'
+          >
+            <Icon name='github' class='size-5' /> GitHub
+          </a>
+        )
+      }
+      {
+        data.links.demo && (
+          <a
+            class='flex items-center gap-1 font-medium'
+            href={data.links.demo}
+            target='_blank'
+            rel='noreferrer'
+          >
+            <Icon name='earth' class='size-5' /> Demo
+          </a>
+        )
+      }
+    </div>
+  </Fragment>
+
+  <Content />
+
+  <Fragment slot='bottom'>
+    {
+      data.relatedLinks.length > 0 && (
+        <div class='rounded-2xl border bg-card p-5'>
+          <h2 class='font-medium text-foreground'>{isChinese ? '相关文章与笔记' : 'Related writing & notes'}</h2>
+          <ul class='mt-3 space-y-2'>
+            {data.relatedLinks.map((link) => (
+              <li>
+                <a href={link.href} class='font-medium'>
+                  {link.title} →
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+    <CommentsSection {locale} />
+  </Fragment>
+</PageLayout>

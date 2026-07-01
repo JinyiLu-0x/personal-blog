@@ -1,44 +1,7 @@
 ---
-import PageLayout from '@/layouts/BaseLayout.astro'
-import PageHeader from '@/components/common/PageHeader.astro'
-import PortfolioProjectCard from '@/components/projects/PortfolioProjectCard.astro'
-import { getPublicProjects } from '@/utils/content'
-import { getUi } from '@/i18n/ui'
-import type { SiteLocale } from '@/i18n/ui'
-import SmartBackButton from '@/components/common/SmartBackButton.astro'
+import ProjectsIndexPage from '@/components/pages/projects/ProjectsIndexPage.astro'
 
 export const prerender = true
-
-interface Props { locale?: SiteLocale }
-const { locale = 'zh-CN' } = Astro.props
-const projects = await getPublicProjects(locale)
-const ui = getUi(locale)
-const isChinese = locale === 'zh-CN'
-
-const meta = {
-  title: ui.pages.projects,
-  description: ui.pages.projectsSubtitle
-}
 ---
 
-<PageLayout {meta} {locale}>
-  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
-    <SmartBackButton fallback={locale === 'en-US' ? '/en' : '/'} {locale} />
-    <PageHeader
-      title={ui.pages.projects}
-      subtitle={ui.pages.projectsSubtitle}
-      class='animate mb-8 mt-6 sm:mt-10'
-      id='content-header'
-    />
-
-    <section id='content' class='animate grid gap-4 sm:grid-cols-2' aria-label='Projects list'>
-      {
-        projects.length > 0 ? (
-          projects.map((project) => <PortfolioProjectCard {project} {locale} />)
-        ) : (
-          <p>{isChinese ? '暂时没有公开项目。' : 'No public projects yet.'}</p>
-        )
-      }
-    </section>
-  </main>
-</PageLayout>
+<ProjectsIndexPage />

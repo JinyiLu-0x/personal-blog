@@ -1,55 +1,7 @@
 ---
-import { Button } from 'astro-pure/user'
-import PageLayout from '@/layouts/BaseLayout.astro'
-import PageHeader from '@/components/common/PageHeader.astro'
-import { getAllTaggedContent, getTagsWithCount } from '@/utils/content'
-import { formatTag, getUi } from '@/i18n/ui'
-import { localizedPath, type SiteLocale } from '@/i18n/ui'
-import SmartBackButton from '@/components/common/SmartBackButton.astro'
+import TagsIndexPage from '@/components/pages/tags/TagsIndexPage.astro'
 
 export const prerender = true
-
-interface Props { locale?: SiteLocale }
-const { locale = 'zh-CN' } = Astro.props
-const allTags = getTagsWithCount(await getAllTaggedContent(locale))
-const ui = getUi(locale)
-
-const meta = {
-  description: ui.pages.tagsSubtitle,
-  title: ui.pages.tags
-}
 ---
 
-<PageLayout {meta} {locale}>
-  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
-    <SmartBackButton fallback={localizedPath('/blog', locale)} {locale} />
-    <PageHeader
-      title={ui.pages.tags}
-      subtitle={ui.pages.tagsSubtitle}
-      class='animate mb-8 mt-6 sm:mt-10'
-      id='content-header'
-    />
-
-    <div id='content' class='animate'>
-      {
-        allTags.length > 0 ? (
-          <ul class='flex flex-wrap gap-3'>
-            {allTags.map(([tag, count]) => (
-              <li>
-                <Button
-                  href={localizedPath(`/tags/${encodeURIComponent(tag)}`, locale)}
-                  variant='pill'
-                  class='gap-x-1 border bg-background'
-                >
-                  #{formatTag(tag, locale)} <span class='text-xs text-muted-foreground'>{count}</span>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>{locale === 'zh-CN' ? '暂时没有标签。' : 'No tags yet.'}</p>
-        )
-      }
-    </div>
-  </main>
-</PageLayout>
+<TagsIndexPage />

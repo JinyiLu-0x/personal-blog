@@ -1,0 +1,62 @@
+---
+import PageLayout from '@/layouts/BaseLayout.astro'
+import PageHeader from '@/components/common/PageHeader.astro'
+import { getPublishedBlogPosts } from '@/utils/content'
+import { getUi } from '@/i18n/ui'
+import { localizedPath, type SiteLocale } from '@/i18n/ui'
+import LocalizedPostPreview from '@/components/blog/LocalizedPostPreview.astro'
+import SmartBackButton from '@/components/common/SmartBackButton.astro'
+
+interface Props { locale?: SiteLocale }
+const { locale = 'zh-CN' } = Astro.props
+const allPosts = await getPublishedBlogPosts(locale)
+const allPostsByYear = [...allPosts.reduce((groups, post) => {
+  const year = (post.data.updatedDate ?? post.data.publishDate).getFullYear()
+  groups.set(year, [...(groups.get(year) ?? []), post])
+  return groups
+}, new Map<number, typeof allPosts>())]
+const ui = getUi(locale)
+const isChinese = locale === 'zh-CN'
+
+const meta = {
+  description: ui.pages.archivesSubtitle,
+  title: ui.pages.archives
+}
+---
+
+<PageLayout {meta} {locale}>
+  <main class='mx-auto mt-6 w-full max-w-5xl lg:mt-10'>
+    <SmartBackButton fallback={localizedPath('/blog', locale)} {locale} />
+    <PageHeader
+      title={ui.pages.archives}
+      subtitle={ui.pages.archivesSubtitle}
+      class='animate mb-8 mt-6 sm:mt-10'
+      id='content-header'
+    />
+
+    {allPosts.length === 0 && <p>{isChinese ? '暂时没有公开文章。' : 'No published posts yet.'}</p>}
+
+    <section id='content' class='animate' aria-label='Blog post list'>
+      {
+        allPostsByYear.map(([year, posts]) => (
+          <div class='relative mt-20'>
+            <h2
+              class='absolute -start-6 -top-16 z-0 text-9xl font-bold text-transparent opacity-12 dark:opacity-25'
+              style='-webkit-text-stroke-width:2px;-webkit-text-stroke-color:hsl(var(--foreground)/var(--un-text-opacity))'
+            >
+              <samp>{year}</samp>
+            </h2>
+            <p class='px-5 text-muted-foreground'>
+              {posts.length} {isChinese ? '篇文章' : posts.length === 1 ? 'post' : 'posts'}
+            </p>
+            <ul class='flex flex-col text-start'>
+              {posts.map((p) => (
+                <LocalizedPostPreview post={p} {locale} class='border-0 bg-transparent py-2' />
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+  </main>
+</PageLayout>
