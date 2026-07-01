@@ -1,7 +1,7 @@
 ---
 title: 'Raspberry Pi 私有云'
 description: '基于 Raspberry Pi 与 Linux Web 技术栈构建、支持安全远程访问的自托管私有云。'
-publishDate: 2026-06-26
+publishDate: 2025-06-01
 techStack: [Linux, Raspberry Pi, Nextcloud, Apache, PHP, MySQL, Tailscale]
 role: '基础设施设计、配置与部署'
 status: 'complete'

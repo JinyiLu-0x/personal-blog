@@ -1,6 +1,6 @@
 ---
 title: '从博客到个人知识发布系统'
-publishDate: 2026-06-28
+publishDate: 2026-06-01
 description: '记录这个网站第一阶段的信息架构、范围选择和实现原则。'
 tags:
   - Astro

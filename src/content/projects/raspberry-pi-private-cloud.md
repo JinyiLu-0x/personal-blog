@@ -1,7 +1,7 @@
 ---
 title: 'Raspberry Pi Private Cloud'
 description: 'A self-hosted private cloud with secure remote access, built on a Raspberry Pi and Linux web stack.'
-publishDate: 2026-06-26
+publishDate: 2025-06-01
 techStack:
   - Linux
   - Raspberry Pi

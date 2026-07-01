@@ -1,6 +1,6 @@
 ---
 title: 'From a Blog to a Personal Knowledge System'
-publishDate: 2026-06-28
+publishDate: 2026-06-01
 description: 'The information architecture, scope decisions, and implementation principles behind the first version of this site.'
 tags:
   - Astro

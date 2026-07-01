@@ -1,7 +1,7 @@
 ---
 title: 'EcoSkin Salesforce AI Agent'
 description: 'An enterprise retail workflow for AI-assisted recommendations, ordering, support, and post-sale escalation.'
-publishDate: 2026-06-26
+publishDate: 2025-11-01
 techStack:
   - Salesforce
   - Apex

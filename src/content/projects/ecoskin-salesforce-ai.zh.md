@@ -1,7 +1,7 @@
 ---
 title: 'EcoSkin Salesforce AI Agent'
 description: '连接 AI 辅助推荐、下单、客户支持与售后升级的企业零售工作流。'
-publishDate: 2026-06-26
+publishDate: 2025-11-01
 techStack: [Salesforce, Apex, Omni-Channel, Workflow Builder]
 role: '解决方案架构与 Salesforce 开发'
 status: 'complete'

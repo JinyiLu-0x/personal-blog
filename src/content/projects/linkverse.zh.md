@@ -1,7 +1,7 @@
 ---
 title: 'LinkVerse Knowledge Workspace'
 description: '以关系为核心，将知识图谱、笔记和资源卡片连接起来，并支持可选云端同步的工作空间。'
-publishDate: 2026-06-26
+publishDate: 2026-03-01
 techStack: [React, TypeScript, Vite, React Flow, Zustand, Supabase]
 role: '全栈产品设计与开发'
 status: 'active'

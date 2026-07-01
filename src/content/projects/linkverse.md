@@ -1,7 +1,7 @@
 ---
 title: 'LinkVerse Knowledge Workspace'
 description: 'A relationship-first workspace for connected graphs, notes, and resource cards with optional cloud sync.'
-publishDate: 2026-06-26
+publishDate: 2026-03-01
 techStack:
   - React
   - TypeScript
