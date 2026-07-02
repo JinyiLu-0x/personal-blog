@@ -104,6 +104,27 @@ Use Samuel QZQ’s site as inspiration for:
 
 Do not overuse animation.
 
+### 3.4 Liquid Glass Reference
+
+When the user requests a liquid glass or Liquid Glass effect, inspect and use this implementation as the primary technical and visual reference:
+
+https://liquid-glass.ybouane.com/
+
+GitHub:
+
+https://github.com/ybouane/liquidglass
+
+Liquid glass should not be approximated with opacity and backdrop blur alone. Preserve the reference's key qualities where appropriate:
+
+1. background refraction
+2. restrained chromatic aberration
+3. edge and specular highlights
+4. Fresnel-style rim lighting
+5. rounded bevel depth
+6. background-aware tint and contrast
+
+Adapt brightness and tint to the actual page background. On this site's light grey-blue background, prefer clear, bright glass instead of a dark smoky surface. Keep a readable CSS fallback, respect reduced motion, and avoid applying expensive real-time effects to many elements at once.
+
 ---
 
 ## 4. Visual Direction

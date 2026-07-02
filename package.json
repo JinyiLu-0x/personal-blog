@@ -22,6 +22,7 @@
     "@astrojs/compiler-rs": "^0.1.8",
     "@astrojs/rss": "4.0.18",
     "@waline/client": "^3.13.0",
+    "@ybouane/liquidglass": "^1.0.3",
     "astro": "6.1.8",
     "astro-pure": "1.4.6",
     "katex": "^0.16.45",

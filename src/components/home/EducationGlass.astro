@@ -1,0 +1,192 @@
+---
+import type { SiteLocale } from '@/i18n/ui'
+
+interface Props {
+  locale: SiteLocale
+}
+
+const { locale } = Astro.props
+const config = JSON.stringify({
+  blurAmount: 0,
+  refraction: 1.18,
+  chromAberration: 0.024,
+  edgeHighlight: 0.42,
+  specular: 0.38,
+  fresnel: 1,
+  distortion: 0.045,
+  cornerRadius: 16,
+  zRadius: 13,
+  opacity: 0.28,
+  saturation: 0,
+  tintStrength: 0,
+  brightness: 0.12,
+  shadowOpacity: 0.025,
+  shadowSpread: 0,
+  shadowOffsetY: 1
+})
+---
+
+<div class='education-glass-scene' data-liquid-glass-root>
+  <div class='education-glass-backdrop' aria-hidden='true'></div>
+  <div
+    class='education-glass w-full rounded-2xl px-4 py-2.5 text-[10px] sm:text-xs'
+    data-liquid-glass
+    data-config={config}
+  >
+    <span class='relative z-10 block min-w-max whitespace-nowrap text-foreground/80'>
+      <span class='sm:hidden'>
+        {locale === 'zh-CN' ? '蒙纳士大学（QS 前 50）· IT 本科 · 2027.12 毕业' : 'Monash · IT · Graduation: Dec 2027'}
+      </span>
+      <span class='hidden sm:inline'>
+        {locale === 'zh-CN'
+          ? '目前就读于蒙纳士大学（QS 世界前 50）· IT 本科 · 预计 2027 年 12 月毕业'
+          : 'Monash University · Bachelor of IT · Graduation: Dec 2027'}
+      </span>
+    </span>
+  </div>
+</div>
+
+<script>
+  import { LiquidGlass, type LiquidGlass as LiquidGlassInstance } from '@ybouane/liquidglass'
+
+  type GlassRoot = HTMLElement & { liquidGlassInstance?: LiquidGlassInstance }
+
+  const setupLiquidGlass = async () => {
+    const roots = document.querySelectorAll<GlassRoot>('[data-liquid-glass-root]')
+
+    for (const root of roots) {
+      if (root.liquidGlassInstance || root.dataset.liquidGlassLoading === 'true') continue
+
+      const glass = root.querySelector<HTMLElement>('[data-liquid-glass]')
+      if (!glass) continue
+
+      root.dataset.liquidGlassLoading = 'true'
+      try {
+        root.liquidGlassInstance = await LiquidGlass.init({ root, glassElements: [glass] })
+        root.classList.add('is-liquid-glass-ready')
+      } catch (error) {
+        console.warn('Liquid glass enhancement unavailable; using CSS fallback.', error)
+      } finally {
+        delete root.dataset.liquidGlassLoading
+      }
+    }
+  }
+
+  const destroyLiquidGlass = () => {
+    document.querySelectorAll<GlassRoot>('[data-liquid-glass-root]').forEach((root) => {
+      root.liquidGlassInstance?.destroy()
+      delete root.liquidGlassInstance
+      root.classList.remove('is-liquid-glass-ready')
+    })
+  }
+
+  setupLiquidGlass()
+  document.addEventListener('astro:page-load', setupLiquidGlass)
+  document.addEventListener('astro:before-swap', destroyLiquidGlass)
+</script>
+
+<style>
+  .education-glass-scene {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 1rem;
+    contain: paint;
+  }
+
+  .education-glass-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: inherit;
+    pointer-events: none;
+    background: transparent;
+  }
+
+  .education-glass {
+    position: relative;
+    isolation: isolate;
+    color: rgba(30, 43, 51, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.64);
+    background: transparent;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -1px 0 rgba(72, 78, 82, 0.08);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .education-glass::before,
+  .education-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .education-glass::before {
+    background:
+      radial-gradient(18px 92% at 0% 50%, rgba(255, 255, 255, 0.9), rgba(232, 234, 235, 0.14) 52%, transparent 78%),
+      radial-gradient(18px 92% at 100% 50%, rgba(255, 255, 255, 0.78), rgba(222, 225, 227, 0.12) 52%, transparent 78%);
+    box-shadow:
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.94),
+      inset 0 -1px 0 rgba(78, 84, 88, 0.14),
+      inset 10px 0 14px -13px rgba(255, 255, 255, 0.9),
+      inset -10px 0 14px -13px rgba(205, 209, 212, 0.42);
+  }
+
+  .education-glass::after {
+    inset: 1px;
+    background: linear-gradient(
+      108deg,
+      transparent 0%,
+      transparent 34%,
+      rgba(255, 255, 255, 0.34) 45%,
+      rgba(255, 255, 255, 0.08) 51%,
+      transparent 61%,
+      transparent 100%
+    );
+  }
+
+  .education-glass > span {
+    color: inherit;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+  }
+
+  .is-liquid-glass-ready .education-glass {
+    border-color: rgba(255, 255, 255, 0.52);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .is-liquid-glass-ready .education-glass::before,
+  .is-liquid-glass-ready .education-glass::after {
+    opacity: 0.48;
+  }
+
+  :global(.dark) .education-glass-backdrop {
+    background: transparent;
+  }
+
+  :global(.dark) .education-glass {
+    color: rgba(245, 249, 251, 0.9);
+    border-color: rgba(255, 255, 255, 0.24);
+    outline-color: rgba(0, 0, 0, 0.18);
+    background: transparent;
+  }
+
+  :global(.dark) .education-glass > span {
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.32);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .education-glass,
+    .education-glass::before,
+    .education-glass::after {
+      transition: none;
+    }
+  }
+</style>

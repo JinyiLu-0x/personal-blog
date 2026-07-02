@@ -43,3 +43,6 @@ bunfig.toml
 
 # Local Netlify folder
 .netlify
+
+# Private/source screenshots used while curating notes
+public/images/notes/
