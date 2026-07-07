@@ -1,0 +1,831 @@
+---
+import type { SiteLocale } from '@/i18n/ui'
+import type { TopicCloudItem } from '@/utils/topic-cloud'
+
+interface Props {
+  topics: TopicCloudItem[]
+  locale: SiteLocale
+}
+
+const { locale } = Astro.props
+const isChinese = locale === 'zh-CN'
+// Opening animation uses a single carefully spaced English layout for both
+// locales. The homepage's real word cloud still uses the generated bilingual
+// topic data; this intro keeps the visual stable while echoing the same ideas.
+const introTopics = [
+  { word: 'AI', size: 66, x: 500, y: 226, color: 0 },
+  { word: 'Agentic Workflow', size: 38, x: 500, y: 124, color: 1 },
+  { word: 'Product Building', size: 36, x: 500, y: 304, color: 3 },
+  { word: 'Product Thinking', size: 30, x: 252, y: 226, color: 2 },
+  { word: 'Knowledge System', size: 30, x: 748, y: 226, color: 4 },
+  { word: 'AI Agent', size: 28, x: 260, y: 156, color: 0 },
+  { word: 'Context Engineering', size: 27, x: 748, y: 156, color: 1 },
+  { word: 'ChatGPT', size: 24, x: 636, y: 78, color: 4 },
+  { word: 'Claude', size: 23, x: 364, y: 78, color: 5 },
+  { word: 'Codex', size: 23, x: 390, y: 358, color: 0 },
+  { word: 'Obsidian', size: 23, x: 620, y: 358, color: 2 },
+  { word: 'Learning System', size: 22, x: 260, y: 348, color: 3 },
+  { word: 'Knowledge Publishing', size: 22, x: 724, y: 348, color: 1 },
+  { word: 'Antigravity', size: 21, x: 784, y: 286, color: 4 },
+  { word: 'Tool Use', size: 20, x: 222, y: 286, color: 5 },
+  { word: 'Reflective Notes', size: 19, x: 178, y: 92, color: 2 },
+  { word: 'Product Insight', size: 19, x: 824, y: 92, color: 3 },
+  { word: 'User-centric', size: 17, x: 890, y: 216, color: 4 },
+  { word: 'Local-first', size: 17, x: 112, y: 216, color: 1 },
+  { word: 'linkverse', size: 16, x: 132, y: 340, color: 0 },
+  { word: 'public', size: 15, x: 892, y: 340, color: 5 },
+  { word: 'write', size: 15, x: 410, y: 66, color: 2 },
+  { word: 'material', size: 15, x: 588, y: 66, color: 3 },
+  { word: 'Cost', size: 16, x: 500, y: 374, color: 1 },
+  { word: 'Prompt Engineering', size: 15, x: 242, y: 52, color: 1 },
+  { word: 'Human-in-the-loop', size: 15, x: 758, y: 52, color: 2 },
+  { word: 'Tool Integration', size: 15, x: 92, y: 276, color: 3 },
+  { word: 'Building in Public', size: 15, x: 910, y: 276, color: 0 },
+  { word: 'Workflow Automation', size: 15, x: 332, y: 386, color: 4 },
+  { word: 'Software Engineering', size: 15, x: 670, y: 386, color: 5 },
+  { word: 'Local Models', size: 14, x: 74, y: 146, color: 2 },
+  { word: 'Learning Workflow', size: 14, x: 926, y: 146, color: 1 },
+  { word: 'Portfolio', size: 14, x: 74, y: 374, color: 4 },
+  { word: 'Notes', size: 14, x: 926, y: 374, color: 3 },
+  { word: 'Cloud Infrastructure', size: 14, x: 502, y: 28, color: 4 },
+  { word: 'Markdown-first', size: 14, x: 182, y: 404, color: 2 },
+  { word: 'Task Orchestration', size: 14, x: 820, y: 404, color: 1 },
+  { word: 'Problem Framing', size: 13, x: 58, y: 88, color: 5 },
+  { word: 'Guardrails', size: 13, x: 948, y: 88, color: 0 },
+  { word: 'Learning Practice', size: 13, x: 190, y: 25, color: 3 },
+  { word: 'Growth Loop', size: 13, x: 820, y: 25, color: 4 },
+  { word: 'Human Judgment', size: 13, x: 392, y: 405, color: 5 },
+  { word: 'LLM Memory', size: 13, x: 610, y: 405, color: 2 },
+  { word: 'Context', size: 13, x: 500, y: 105, color: 1 }
+].map((topic) => ({ ...topic, rotate: 0 }))
+---
+
+<div
+  class='rain-word-intro fixed inset-0 z-[999] overflow-hidden bg-[#1e405f] text-white transition-opacity duration-700 ease-out motion-reduce:hidden'
+  data-rain-word-intro
+  data-topics={JSON.stringify(introTopics)}
+  data-locale={locale}
+  aria-label={isChinese ? '雨滴生成 AI 词云开场动画' : 'Opening animation where rain forms an AI word cloud'}
+>
+  <div class='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(137,190,218,0.2),transparent_34%),linear-gradient(180deg,#17324e_0%,#2f6f9c_55%,#dfeaf0_145%)]'></div>
+  <div class='pointer-events-none absolute inset-0 opacity-45 backdrop-blur-[0.5px]'></div>
+  <div class='rain-word-intro__canvas absolute inset-0' data-rain-word-canvas></div>
+  <button
+    type='button'
+    class='absolute bottom-9 right-5 z-10 rounded-full border border-white/15 bg-white/5 px-3 py-1 font-mono text-[10px] tracking-wide text-slate-100/60 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35'
+    data-rain-word-skip
+  >
+    Skip
+  </button>
+  <p class='pointer-events-none absolute bottom-4 right-5 z-10 font-mono text-[10px] tracking-wide text-slate-100/45'>
+    Inspired by @S.I.A on Xiaohongshu
+  </p>
+</div>
+
+<script>
+  import type p5 from 'p5'
+
+  type IntroTopic = {
+    word: string
+    size: number
+    x: number
+    y: number
+    rotate: 0 | 90
+    color: number
+  }
+
+  type WordBox = {
+    left: number
+    right: number
+    top: number
+    bottom: number
+  }
+
+  const INTRO_MIN_READY_MS = 4300
+  const INTRO_FADE_MS = 700
+  const BASE_FRAME_MS = 16.67
+
+  type CloudTarget = {
+    left: number
+    right: number
+    top: number
+    bottom: number
+    width: number
+    height: number
+    scale: number
+    compact: boolean
+  }
+
+  class Raindrop {
+    sketch: p5
+    x = 0
+    y = 0
+    length = 0
+    speed = 0
+    weight = 0
+    alpha = 0
+    slant = 0
+    impactY = 0
+    color: [number, number, number] = [235, 247, 255]
+    target: CloudTarget
+
+    constructor(sketch: p5, target: CloudTarget) {
+      this.sketch = sketch
+      this.target = target
+      this.reset(true)
+    }
+
+    reset(initial = false) {
+      const p = this.sketch
+      const spread = this.target.compact ? 34 : 80
+      this.x = p.random(this.target.left - spread, this.target.right + spread)
+      this.y = initial ? p.random(-p.height * 0.9, -18) : p.random(-180, -20)
+      this.length = p.random(22, 62) * (this.target.compact ? 0.82 : 1)
+      this.speed = p.random(6.8, 12.8) * (this.target.compact ? 0.9 : 1)
+      this.weight = p.random(0.9, 2.2)
+      this.alpha = p.random(82, 188)
+      this.slant = p.random(-7, 2.5)
+      this.impactY = p.random(this.target.top + this.target.height * 0.12, this.target.bottom - this.target.height * 0.08)
+      const palette: Array<[number, number, number]> = [
+        [248, 253, 255],
+        [205, 232, 248],
+        [232, 242, 248],
+        [180, 218, 239]
+      ]
+      this.color = p.random(palette)
+    }
+
+    update(delta: number) {
+      const factor = delta / BASE_FRAME_MS
+      this.y += this.speed * factor
+      this.x += this.slant * 0.045 * factor
+    }
+
+    display() {
+      const p = this.sketch
+      p.stroke(this.color[0], this.color[1], this.color[2], this.alpha)
+      p.strokeWeight(this.weight)
+      p.line(this.x, this.y, this.x + this.slant, this.y + this.length)
+    }
+
+    hitsTarget() {
+      const spread = this.target.compact ? 48 : 95
+      return this.y + this.length >= this.impactY &&
+        this.x >= this.target.left - spread &&
+        this.x <= this.target.right + spread
+    }
+
+    outOfBounds() {
+      return this.y > this.sketch.height + 100
+    }
+  }
+
+  class Ripple {
+    sketch: p5
+    x: number
+    y: number
+    age = 0
+    life: number
+    arcs: Array<{ offset: number; start: number; stop: number; weight: number; alpha: number; ratio: number; drift: number }>
+
+    constructor(sketch: p5, x: number, y: number) {
+      this.sketch = sketch
+      this.x = x
+      this.y = y
+      this.life = sketch.random(920, 1450)
+      this.arcs = Array.from({ length: Math.floor(sketch.random(2, 6)) }, () => {
+        const start = sketch.random(0, sketch.TWO_PI)
+        return {
+          offset: sketch.random(0, 18),
+          start,
+          stop: start + sketch.random(sketch.PI * 0.45, sketch.PI * 1.35),
+          weight: sketch.random(0.65, 1.45),
+          alpha: sketch.random(70, 145),
+          ratio: sketch.random(0.74, 0.94),
+          drift: sketch.random(-1.2, 1.2)
+        }
+      })
+    }
+
+    update(delta: number) {
+      this.age += delta
+    }
+
+    display() {
+      const p = this.sketch
+      const progress = this.age / this.life
+      const fade = Math.pow(1 - progress, 1.35)
+      const radius = 10 + progress * 82
+      p.noFill()
+      for (const segment of this.arcs) {
+        p.stroke(224, 243, 252, segment.alpha * fade)
+        p.strokeWeight(segment.weight)
+        const wobble = p.sin(progress * p.TWO_PI + segment.offset) * 2.25
+        p.arc(
+          this.x + wobble * segment.drift,
+          this.y + wobble * 0.16,
+          radius + segment.offset,
+          (radius + segment.offset) * segment.ratio,
+          segment.start + progress * 0.28,
+          segment.stop + progress * 0.24
+        )
+      }
+    }
+
+    isDead() {
+      return this.age >= this.life
+    }
+  }
+
+  class WakeRipple {
+    sketch: p5
+    x: number
+    y: number
+    angle: number
+    strength: number
+    age = 0
+    life: number
+    side: number
+
+    constructor(sketch: p5, x: number, y: number, angle: number, strength: number) {
+      this.sketch = sketch
+      this.x = x
+      this.y = y
+      this.angle = angle
+      this.strength = strength
+      this.life = sketch.random(520, 820)
+      this.side = sketch.random([-1, 1])
+    }
+
+    update(delta: number) {
+      this.age += delta
+      const p = this.sketch
+      const progress = this.age / this.life
+      const drift = this.strength * 0.12 * (delta / BASE_FRAME_MS)
+      this.x -= p.cos(this.angle) * drift
+      this.y -= p.sin(this.angle) * drift * 0.55
+      this.y += p.sin(progress * p.PI) * 0.16
+    }
+
+    display() {
+      const p = this.sketch
+      const progress = p.constrain(this.age / this.life, 0, 1)
+      const fade = Math.pow(1 - progress, 1.7)
+      const spread = 14 + progress * (34 + this.strength * 1.6)
+      const cross = this.angle + p.HALF_PI * this.side
+
+      p.push()
+      p.translate(this.x + p.cos(cross) * spread * 0.12, this.y + p.sin(cross) * spread * 0.08)
+      p.rotate(this.angle + this.side * 0.22)
+      p.noFill()
+      p.stroke(226, 244, 252, 72 * fade)
+      p.strokeWeight(0.85)
+      for (let i = 0; i < 3; i += 1) {
+        const w = spread + i * 12
+        const h = w * (0.32 + i * 0.04)
+        const start = this.side > 0 ? p.PI * 0.16 : p.PI * 1.05
+        const stop = start + p.PI * (0.52 + i * 0.06)
+        p.arc(i * -2, this.side * (i * 2.4), w, h, start, stop)
+      }
+      p.pop()
+    }
+
+    isDead() {
+      return this.age >= this.life
+    }
+  }
+
+  class WordRevealDrop {
+    sketch: p5
+    word: CloudWord
+    startAt: number
+    x: number
+    y: number
+    targetY: number
+    startY: number
+    length: number
+    slant: number
+    speed: number
+    alpha: number
+    done = false
+
+    constructor(sketch: p5, word: CloudWord, index: number, compact: boolean) {
+      this.sketch = sketch
+      this.word = word
+      this.x = word.targetX + sketch.random(-3, 3)
+      this.targetY = word.targetY
+      this.startY = -sketch.random(82, 210)
+      this.y = this.startY
+      this.length = sketch.random(32, compact ? 54 : 68)
+      this.slant = sketch.random(-6, 1.5)
+      const cadence = compact ? 155 : 118
+      this.startAt = 480 + index * cadence + sketch.random(-18, 26)
+      const travel = this.targetY - this.startY
+      const duration = sketch.random(compact ? 720 : 640, compact ? 980 : 860)
+      this.speed = travel / (duration / BASE_FRAME_MS)
+      this.alpha = sketch.random(132, 218)
+    }
+
+    update(delta: number, elapsed: number) {
+      if (this.done || elapsed < this.startAt) return
+      this.y += this.speed * (delta / BASE_FRAME_MS)
+      if (this.y + this.length >= this.targetY) {
+        this.done = true
+        this.word.revealFrom(this.word.targetX, this.word.targetY)
+      }
+    }
+
+    display(elapsed: number) {
+      if (this.done || elapsed < this.startAt) return
+      const p = this.sketch
+      const appear = p.constrain((elapsed - this.startAt) / 180, 0, 1)
+      p.stroke(236, 249, 255, this.alpha * appear)
+      p.strokeWeight(1.55)
+      p.line(this.x, this.y, this.x + this.slant, this.y + this.length)
+    }
+  }
+
+  class CloudWord {
+    sketch: p5
+    word: string
+    targetX: number
+    targetY: number
+    x: number
+    y: number
+    size: number
+    rotate: 0 | 90
+    colorIndex: number
+    delay: number
+    bornAt: number
+    seed: number
+    alpha = 0
+    scale = 0.9
+    revealed = false
+    revealAt = 0
+    sourceX: number
+    sourceY: number
+    splashSeed: number
+    hovered = false
+    splashEnabled = false
+
+    constructor(sketch: p5, topic: IntroTopic, target: CloudTarget) {
+      this.sketch = sketch
+      this.word = topic.word
+      this.targetX = target.left + (topic.x / 1000) * target.width
+      this.targetY = target.top + (topic.y / 420) * target.height
+      this.sourceX = this.targetX
+      this.sourceY = this.targetY
+      this.x = this.sourceX
+      this.y = this.sourceY
+      this.size = topic.size * sketch.constrain(target.scale * 1.15, 0.54, 1.05)
+      this.rotate = target.compact ? 0 : topic.rotate
+      this.colorIndex = topic.color
+      this.delay = 0
+      this.bornAt = sketch.millis()
+      this.seed = sketch.random(1000)
+      this.splashSeed = sketch.random(1000)
+    }
+
+    revealFrom(x: number, y: number, extraDelay = 0, splashEnabled = false) {
+      if (this.revealed) return
+      const p = this.sketch
+      this.revealed = true
+      this.revealAt = p.millis() + this.delay + extraDelay
+      this.splashEnabled = splashEnabled
+      // The splash happens where the word will live, so the word feels revealed
+      // by the water instead of flying in like a slide transition.
+      this.sourceX = this.targetX + (x - this.targetX) * 0.03
+      this.sourceY = this.targetY + (y - this.targetY) * 0.03
+      this.x = this.targetX + p.random(-2, 2)
+      this.y = this.targetY + p.random(-2, 2)
+    }
+
+    revealFinal() {
+      this.revealed = true
+      this.revealAt = this.sketch.millis() - 2600
+      this.splashEnabled = false
+      this.alpha = 235
+      this.scale = 1
+      this.x = this.targetX
+      this.y = this.targetY
+    }
+
+    update(delta: number) {
+      if (!this.revealed) return
+      const p = this.sketch
+      const elapsed = p.millis() - this.revealAt
+      const progress = p.constrain(elapsed / 1850, 0, 1)
+      const eased = progress * progress * (3 - 2 * progress)
+      const damping = 1 - Math.pow(1 - (0.026 + eased * 0.032), delta / BASE_FRAME_MS)
+      this.alpha = eased * 235
+      this.scale = 0.88 + eased * 0.12
+      this.x = p.lerp(this.x, this.targetX, damping)
+      this.y = p.lerp(this.y, this.targetY, damping)
+    }
+
+    display() {
+      if (!this.revealed) return
+      const p = this.sketch
+      const palette: Array<[number, number, number]> = [
+        [224, 245, 255],
+        [136, 190, 220],
+        [203, 219, 230],
+        [118, 174, 207],
+        [238, 246, 250],
+        [179, 205, 222]
+      ]
+      const color = palette[this.colorIndex % palette.length]
+      const elapsed = p.millis() - this.revealAt
+      const splashProgress = p.constrain(elapsed / 980, 0, 1)
+      const splashFade = Math.pow(1 - splashProgress, 1.45)
+      const settled = p.constrain((elapsed - 1600) / 800, 0, 1)
+      const breathing = this.hovered ? 0 : p.sin(p.millis() * 0.00095 + this.seed) * 0.42 * settled
+      const drift = breathing
+
+      if (this.splashEnabled && splashFade > 0.01) {
+        const splashRadius = 8 + splashProgress * (46 + this.size * 0.8)
+        p.push()
+        p.translate(this.sourceX, this.sourceY)
+        p.noFill()
+        p.stroke(220, 242, 252, 92 * splashFade)
+        p.strokeWeight(0.8)
+        for (let i = 0; i < 3; i += 1) {
+          const start = this.splashSeed + i * 1.9 + splashProgress * 0.32
+          p.arc(
+            p.sin(this.splashSeed + i) * 2.5,
+            p.cos(this.splashSeed + i * 1.2) * 1.8,
+            splashRadius + i * 12,
+            (splashRadius + i * 12) * 0.72,
+            start,
+            start + p.PI * (0.42 + i * 0.13)
+          )
+        }
+        p.pop()
+      }
+
+      p.push()
+      p.translate(this.x, this.y + drift)
+      if (this.rotate === 90) p.rotate(p.HALF_PI)
+      p.scale(this.scale)
+      p.noStroke()
+      p.fill(color[0], color[1], color[2], this.alpha)
+      p.textAlign(p.CENTER, p.CENTER)
+      p.textFont('ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace')
+      p.textStyle(this.size > 34 ? p.BOLD : p.NORMAL)
+      p.textSize(this.size)
+      p.text(this.word, 0, 0)
+      p.pop()
+    }
+
+    setHovered(value: boolean) {
+      this.hovered = value
+    }
+
+    getBox(padding = 8): WordBox {
+      const width = this.word.length * this.size * 0.62 * this.scale + padding * 2
+      const height = this.size * 1.22 * this.scale + padding * 2
+      return {
+        left: this.x - width / 2,
+        right: this.x + width / 2,
+        top: this.y - height / 2,
+        bottom: this.y + height / 2
+      }
+    }
+
+    hitTest(x: number, y: number) {
+      if (!this.revealed || this.alpha < 90) return false
+      const box = this.getBox(12)
+      return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom
+    }
+
+    isVisible() {
+      return this.alpha > 205
+    }
+
+    isRevealed() {
+      return this.revealed
+    }
+  }
+
+  class RainWordIntro {
+    root: HTMLElement
+    canvasHost: HTMLElement
+    skipButton: HTMLButtonElement
+    topics: IntroTopic[]
+    sketch?: p5
+    leaving = false
+
+    constructor(root: HTMLElement) {
+      this.root = root
+      this.canvasHost = root.querySelector<HTMLElement>('[data-rain-word-canvas]')!
+      this.skipButton = root.querySelector<HTMLButtonElement>('[data-rain-word-skip]')!
+      this.topics = JSON.parse(root.dataset.topics ?? '[]')
+    }
+
+    async start() {
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (reducedMotion || this.topics.length === 0) {
+        this.finish()
+        return
+      }
+
+      this.lockPage()
+      const { default: P5 } = await import('p5')
+      this.sketch = new P5((p: p5) => {
+        let drops: Raindrop[] = []
+        let wordDrops: WordRevealDrop[] = []
+        let ripples: Ripple[] = []
+        let wakeRipples: WakeRipple[] = []
+        let words: CloudWord[] = []
+        let target = this.getTarget()
+        let stable = false
+        let lastWakeAt = 0
+        let lastMouseX = 0
+        let lastMouseY = 0
+
+        const resetScene = () => {
+          target = this.getTarget()
+          const activeTopics = this.getActiveTopics(target)
+          const density = target.compact ? 42 : 34
+          drops = Array.from({ length: Math.max(target.compact ? 24 : 38, Math.floor(p.width / density)) }, () => new Raindrop(p, target))
+          ripples = []
+          wakeRipples = []
+          words = activeTopics.map((topic) => new CloudWord(p, topic, target))
+          wordDrops = words.map((word, index) => new WordRevealDrop(p, word, index, target.compact))
+          lastWakeAt = 0
+          lastMouseX = p.mouseX
+          lastMouseY = p.mouseY
+        }
+
+        const skipToFinalScene = () => {
+          wordDrops = []
+          ripples = []
+          wakeRipples = []
+          words.forEach((word) => word.revealFinal())
+          stable = true
+          this.root.classList.add('is-ready')
+        }
+
+        p.setup = () => {
+          const canvas = p.createCanvas(window.innerWidth, window.innerHeight)
+          canvas.parent(this.canvasHost)
+          p.pixelDensity(Math.min(window.devicePixelRatio || 1, 2))
+          resetScene()
+        }
+
+        p.windowResized = () => {
+          p.resizeCanvas(window.innerWidth, window.innerHeight)
+          resetScene()
+        }
+
+        p.mouseMoved = () => {
+          let hoveringWord = false
+          for (const word of words) {
+            const hovered = word.hitTest(p.mouseX, p.mouseY)
+            word.setHovered(hovered)
+            hoveringWord ||= hovered
+          }
+          this.canvasHost.style.cursor = hoveringWord ? 'pointer' : 'default'
+
+          const dx = p.mouseX - lastMouseX
+          const dy = p.mouseY - lastMouseY
+          const speed = Math.hypot(dx, dy)
+          const now = p.millis()
+          const centerX = target.left + target.width * 0.5
+          const centerY = target.top + target.height * 0.52
+          const normX = (p.mouseX - centerX) / (target.width * 0.57)
+          const normY = (p.mouseY - centerY) / (target.height * 0.48)
+          const insideWater = normX * normX + normY * normY < 1
+
+          if (insideWater && speed > 4 && now - lastWakeAt > 28) {
+            const angle = Math.atan2(dy, dx)
+            const strength = p.constrain(speed, 5, 28)
+            wakeRipples.push(new WakeRipple(p, p.mouseX, p.mouseY, angle, strength))
+            if (speed > 14) {
+              wakeRipples.push(new WakeRipple(p, p.mouseX - dx * 0.28, p.mouseY - dy * 0.28, angle, strength * 0.72))
+            }
+            wakeRipples = wakeRipples.slice(-34)
+            lastWakeAt = now
+          }
+
+          lastMouseX = p.mouseX
+          lastMouseY = p.mouseY
+        }
+
+        p.mouseClicked = () => {
+          if (words.some((word) => word.hitTest(p.mouseX, p.mouseY))) {
+            this.finish()
+          }
+        }
+
+        p.doubleClicked = () => {
+          const clickedWord = words.some((word) => word.hitTest(p.mouseX, p.mouseY))
+          if (!clickedWord) skipToFinalScene()
+        }
+
+        this.skipButton.addEventListener('click', skipToFinalScene, { once: true })
+
+        p.draw = () => {
+          const elapsed = p.millis()
+          const delta = Math.min(p.deltaTime || BASE_FRAME_MS, 34)
+          p.clear()
+
+          // A very soft mist layer keeps the rain from feeling like a game effect.
+          p.noStroke()
+          p.fill(222, 238, 246, target.compact ? 7 : 9)
+          p.ellipse(p.width * 0.5, target.top + target.height * 0.52, target.width * 1.48, target.height * 1.5)
+
+          for (const drop of drops) {
+            drop.update(delta)
+            drop.display()
+            if (drop.hitsTarget()) {
+              if (elapsed < 3900 || p.random() < 0.22) {
+                ripples.push(new Ripple(p, drop.x + drop.slant * 0.5, drop.impactY))
+              }
+              drop.reset()
+            } else if (drop.outOfBounds()) {
+              drop.reset()
+            }
+          }
+
+          for (const wordDrop of wordDrops) {
+            wordDrop.update(delta, elapsed)
+            wordDrop.display(elapsed)
+          }
+
+          ripples.forEach((ripple) => {
+            ripple.update(delta)
+            ripple.display()
+          })
+          ripples = ripples.filter((ripple) => !ripple.isDead())
+
+          wakeRipples.forEach((wake) => {
+            wake.update(delta)
+            wake.display()
+          })
+          wakeRipples = wakeRipples.filter((wake) => !wake.isDead())
+
+          for (const word of words) {
+            word.update(delta)
+            word.display()
+          }
+
+          const visibleWords = words.filter((word) => word.isVisible()).length
+          if (!stable && elapsed > INTRO_MIN_READY_MS && visibleWords > words.length * 0.72) {
+            stable = true
+            this.root.classList.add('is-ready')
+          }
+        }
+      })
+    }
+
+    getTarget() {
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      const compact = vw < 720
+      const landscapeShort = vh < 620
+      const width = Math.min(vw * (compact ? 0.92 : 0.82), 980)
+      const height = Math.min(vh * (compact ? 0.46 : 0.42), compact ? 360 : 420)
+      const top = landscapeShort ? vh * 0.18 : compact ? vh * 0.22 : vh * 0.24
+      const scale = Math.min(width / 1000, height / 420)
+      return {
+        left: (window.innerWidth - width) / 2,
+        top,
+        width,
+        height,
+        right: (window.innerWidth + width) / 2,
+        bottom: top + height,
+        scale,
+        compact
+      }
+    }
+
+    getActiveTopics(target: CloudTarget) {
+      const width = window.innerWidth
+      const limit = width < 520 ? 18 : width < 720 ? 24 : width < 980 ? 32 : 44
+      const placed: WordBox[] = []
+      const topics: IntroTopic[] = []
+      const scale = Math.min(Math.max(target.scale * 1.15, 0.54), 1.05)
+
+      for (const topic of this.topics.slice(0, limit)) {
+        const x = target.left + (topic.x / 1000) * target.width
+        const y = target.top + (topic.y / 420) * target.height
+        let size = topic.size
+        let accepted: IntroTopic | undefined
+
+        for (const shrink of [1, 0.9, 0.8, 0.7]) {
+          const finalSize = size * shrink * scale
+          const box = this.measureWordBox(topic.word, x, y, finalSize, target.compact ? 7 : 10)
+          const overlaps = placed.some((other) => this.boxesIntersect(box, other))
+          const inside = box.left >= target.left - 8 &&
+            box.right <= target.right + 8 &&
+            box.top >= target.top - 8 &&
+            box.bottom <= target.bottom + 8
+
+          if (!overlaps && inside) {
+            placed.push(box)
+            accepted = { ...topic, size: size * shrink, rotate: 0 }
+            break
+          }
+        }
+
+        if (accepted) topics.push(accepted)
+      }
+
+      return topics
+    }
+
+    measureWordBox(word: string, x: number, y: number, size: number, padding: number): WordBox {
+      const width = word.length * size * 0.62 + padding * 2
+      const height = size * 1.22 + padding * 2
+      return {
+        left: x - width / 2,
+        right: x + width / 2,
+        top: y - height / 2,
+        bottom: y + height / 2
+      }
+    }
+
+    boxesIntersect(a: WordBox, b: WordBox) {
+      return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+    }
+
+    lockPage() {
+      document.documentElement.classList.add('rain-word-intro-active')
+      document.body.classList.add('rain-word-intro-active')
+    }
+
+    unlockPage() {
+      document.documentElement.classList.remove('rain-word-intro-active')
+      document.body.classList.remove('rain-word-intro-active')
+    }
+
+    finish() {
+      if (this.leaving) return
+      this.leaving = true
+      this.root.classList.add('is-leaving')
+      this.unlockPage()
+      window.setTimeout(() => {
+        this.sketch?.remove()
+        this.root.remove()
+      }, INTRO_FADE_MS)
+    }
+  }
+
+  const mountRainWordIntro = () => {
+    document.querySelectorAll<HTMLElement>('[data-rain-word-intro]').forEach((root) => {
+      if (root.dataset.mounted === 'true') return
+      root.dataset.mounted = 'true'
+      void new RainWordIntro(root).start()
+    })
+  }
+
+  mountRainWordIntro()
+  document.addEventListener('astro:page-load', mountRainWordIntro)
+</script>
+
+<style>
+  :global(html.rain-word-intro-active),
+  :global(body.rain-word-intro-active) {
+    overflow: hidden;
+  }
+
+  .rain-word-intro {
+    opacity: 1;
+  }
+
+  .rain-word-intro::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 37%, transparent 0%, transparent 30%, rgba(15, 42, 70, 0.16) 76%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.16));
+  }
+
+  .rain-word-intro.is-ready .rain-word-intro__hit-area {
+    display: block;
+    cursor: pointer;
+  }
+
+  .rain-word-intro.is-ready .rain-word-intro__hit-area:hover {
+    transform: translate(-50%, -50%) scale(1.012);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 18px 54px -42px rgba(225, 244, 255, 0.6);
+  }
+
+  .rain-word-intro.is-leaving {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .rain-word-intro.is-leaving .rain-word-intro__canvas {
+    transform: scale(1.018);
+    filter: brightness(1.16);
+    transition:
+      transform 700ms ease,
+      filter 700ms ease;
+  }
+</style>

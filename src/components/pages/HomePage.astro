@@ -14,6 +14,7 @@ import { getCanonicalId } from '@/utils/content'
 import LocalizedPostPreview from '@/components/blog/LocalizedPostPreview.astro'
 import TopicCloud from '@/components/home/TopicCloud.astro'
 import EducationGlass from '@/components/home/EducationGlass.astro'
+import RainWordIntro from '@/components/home/RainWordIntro.astro'
 import { buildTopicCloud } from '@/utils/topic-cloud'
 
 interface Props { locale?: SiteLocale }
@@ -40,6 +41,7 @@ const projectStatus = locale === 'zh-CN'
   {locale}
   highlightColor='#659EB9'
 >
+  <RainWordIntro topics={topicCloud} {locale} />
   <main class='flex w-full flex-col items-center'>
     <section
       class='animate mb-10 flex flex-col items-center gap-y-5 text-center'
