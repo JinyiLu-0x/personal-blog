@@ -7,22 +7,22 @@ interface Props {
 
 const { locale } = Astro.props
 const config = JSON.stringify({
-  blurAmount: 0,
-  refraction: 1.18,
-  chromAberration: 0.024,
-  edgeHighlight: 0.42,
-  specular: 0.38,
+  blurAmount: 0.22,
+  refraction: 0.34,
+  chromAberration: 0.004,
+  edgeHighlight: 0.09,
+  specular: 0.04,
   fresnel: 1,
-  distortion: 0.045,
+  distortion: 0.003,
   cornerRadius: 16,
-  zRadius: 13,
-  opacity: 0.28,
+  zRadius: 16,
+  opacity: 0.38,
   saturation: 0,
   tintStrength: 0,
-  brightness: 0.12,
-  shadowOpacity: 0.025,
+  brightness: 0.04,
+  shadowOpacity: 0,
   shadowSpread: 0,
-  shadowOffsetY: 1
+  shadowOffsetY: 0
 })
 ---
 
@@ -108,13 +108,15 @@ const config = JSON.stringify({
     position: relative;
     isolation: isolate;
     color: rgba(30, 43, 51, 0.82);
-    border: 1px solid rgba(255, 255, 255, 0.64);
-    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.44);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06)),
+      rgba(255, 255, 255, 0.025);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.88),
-      inset 0 -1px 0 rgba(72, 78, 82, 0.08);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+      inset 0 1px 0 rgba(255, 255, 255, 0.58),
+      inset 0 -1px 0 rgba(66, 76, 84, 0.055);
+    -webkit-backdrop-filter: blur(20px) saturate(106%) brightness(104%);
+    backdrop-filter: blur(20px) saturate(106%) brightness(104%);
   }
 
   .education-glass::before,
@@ -129,26 +131,24 @@ const config = JSON.stringify({
 
   .education-glass::before {
     background:
-      radial-gradient(18px 92% at 0% 50%, rgba(255, 255, 255, 0.9), rgba(232, 234, 235, 0.14) 52%, transparent 78%),
-      radial-gradient(18px 92% at 100% 50%, rgba(255, 255, 255, 0.78), rgba(222, 225, 227, 0.12) 52%, transparent 78%);
+      linear-gradient(90deg, rgba(255, 255, 255, 0.34), transparent 12%, transparent 88%, rgba(255, 255, 255, 0.2)),
+      radial-gradient(90% 150% at 50% 0%, rgba(255, 255, 255, 0.22), transparent 58%);
     box-shadow:
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.94),
-      inset 0 -1px 0 rgba(78, 84, 88, 0.14),
-      inset 10px 0 14px -13px rgba(255, 255, 255, 0.9),
-      inset -10px 0 14px -13px rgba(205, 209, 212, 0.42);
+      inset 0 1px 0 rgba(255, 255, 255, 0.66),
+      inset 0 -1px 0 rgba(70, 78, 84, 0.065);
   }
 
   .education-glass::after {
     inset: 1px;
     background: linear-gradient(
-      108deg,
-      transparent 0%,
-      transparent 34%,
-      rgba(255, 255, 255, 0.34) 45%,
-      rgba(255, 255, 255, 0.08) 51%,
-      transparent 61%,
-      transparent 100%
+      112deg,
+      transparent 8%,
+      rgba(255, 255, 255, 0.04) 31%,
+      rgba(255, 255, 255, 0.16) 49%,
+      rgba(255, 255, 255, 0.035) 58%,
+      transparent 78%
     );
+    opacity: 0.46;
   }
 
   .education-glass > span {
@@ -157,14 +157,16 @@ const config = JSON.stringify({
   }
 
   .is-liquid-glass-ready .education-glass {
-    border-color: rgba(255, 255, 255, 0.52);
-    background: transparent;
-    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.36);
+    background: rgba(255, 255, 255, 0.018);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -1px 0 rgba(65, 73, 78, 0.04);
   }
 
   .is-liquid-glass-ready .education-glass::before,
   .is-liquid-glass-ready .education-glass::after {
-    opacity: 0.48;
+    opacity: 0.24;
   }
 
   :global(.dark) .education-glass-backdrop {
@@ -175,7 +177,9 @@ const config = JSON.stringify({
     color: rgba(245, 249, 251, 0.9);
     border-color: rgba(255, 255, 255, 0.24);
     outline-color: rgba(0, 0, 0, 0.18);
-    background: transparent;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04)),
+      rgba(255, 255, 255, 0.04);
   }
 
   :global(.dark) .education-glass > span {

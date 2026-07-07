@@ -106,13 +106,15 @@ Do not overuse animation.
 
 ### 3.4 Liquid Glass Reference
 
-When the user requests a liquid glass or Liquid Glass effect, inspect and use this implementation as the primary technical and visual reference:
+When the user requests a liquid glass, Liquid Glass, glass, or frosted glass effect, inspect and use this implementation as the primary technical and visual reference:
 
 https://liquid-glass.ybouane.com/
 
 GitHub:
 
 https://github.com/ybouane/liquidglass
+
+The preferred variant for this site is the reference site's **Frosted Glass** style: translucent, softly blurred, readable, and restrained. Do not default to exaggerated liquid distortion, heavy blue tint, or large glow halos.
 
 Liquid glass should not be approximated with opacity and backdrop blur alone. Preserve the reference's key qualities where appropriate:
 
@@ -123,7 +125,7 @@ Liquid glass should not be approximated with opacity and backdrop blur alone. Pr
 5. rounded bevel depth
 6. background-aware tint and contrast
 
-Adapt brightness and tint to the actual page background. On this site's light grey-blue background, prefer clear, bright glass instead of a dark smoky surface. Keep a readable CSS fallback, respect reduced motion, and avoid applying expensive real-time effects to many elements at once.
+Adapt brightness and tint to the actual page background. On this site's light grey-blue background, prefer clear frosted glass with a subtle milky surface, soft edge highlight, and mild refraction. Avoid dark smoky surfaces, obvious blue patches, and oversized halos. Keep a readable CSS fallback, respect reduced motion, and avoid applying expensive real-time effects to many elements at once.
 
 ---
 
